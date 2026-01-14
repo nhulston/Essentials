@@ -63,7 +63,7 @@ public class WarpCommand extends AbstractPlayerCommand {
                 return;
             }
 
-            String error = TeleportUtil.teleport(store, ref, warp.getWorld(),
+            String error = TeleportUtil.teleportSafe(store, ref, warp.getWorld(),
                     warp.getX(), warp.getY(), warp.getZ(), warp.getYaw(), warp.getPitch());
 
             if (error != null) {

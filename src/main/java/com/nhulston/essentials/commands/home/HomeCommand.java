@@ -57,7 +57,7 @@ public class HomeCommand extends AbstractPlayerCommand {
             return;
         }
 
-        String error = TeleportUtil.teleport(store, ref, home.getWorld(),
+        String error = TeleportUtil.teleportSafe(store, ref, home.getWorld(),
                 home.getX(), home.getY(), home.getZ(), home.getYaw(), home.getPitch());
 
         if (error != null) {
