@@ -5,6 +5,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.nhulston.essentials.commands.home.DelHomeCommand;
 import com.nhulston.essentials.commands.home.HomeCommand;
 import com.nhulston.essentials.commands.home.SetHomeCommand;
+import com.nhulston.essentials.commands.kit.KitCommand;
 import com.nhulston.essentials.commands.spawn.SetSpawnCommand;
 import com.nhulston.essentials.commands.spawn.SpawnCommand;
 import com.nhulston.essentials.commands.warp.DelWarpCommand;
@@ -85,6 +86,9 @@ public class Essentials extends JavaPlugin {
         // Spawn commands
         getCommandRegistry().registerCommand(new SetSpawnCommand(spawnManager));
         getCommandRegistry().registerCommand(new SpawnCommand(spawnManager));
+
+        // Kit command
+        getCommandRegistry().registerCommand(new KitCommand());
     }
 
     private void registerEvents() {
