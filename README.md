@@ -11,92 +11,85 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 - Chat formatting (per-rank)
 - Build protection (global or spawn-only)
 
-![Homes](images/homes.png)
-![Warps](images/warps.png)
-![TPA](images/tpa.png)
-![Chat Format](images/chatformat.png)
+![Homes](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/homes.png) ![TPA](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/tpa.png) ![Warps](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/warps.png)
+
+![Chat Format](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/chatformat.png) ![Chat Format2](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/chatformat2.png)
 
 # Commands
 
-| Command              | Description                     | Permission              |
-|----------------------|---------------------------------|-------------------------|
-| `/sethome <name>`    | Set a home                      | `essentials.sethome`    |
-| `/home <name>`       | Teleport to your home           | `essentials.home`       |
-| `/delhome <name>`    | Delete a home                   | `essentials.delhome`    |
-| `/setwarp <name>`    | Set a server warp               | `essentials.setwarp`    |
-| `/warp <name>`       | Teleport to a warp              | `essentials.warp`       |
-| `/delwarp <name>`    | Delete a warp                   | `essentials.delwarp`    |
-| `/setspawn`          | Set server spawn                | `essentials.setspawn`   |
-| `/spawn`             | Teleport to spawn               | `essentials.spawn`      |
-| `/tpa <player>`      | Request to teleport to a player | `essentials.tpa`        |
-| `/tpaccept <player>` | Accept a teleport request       | `essentials.tpaccept`   |
+| Command                | Description                     | Permission                       |
+|------------------------|---------------------------------|----------------------------------|
+| <code>/sethome</code>  | Set a home                      | <code>essentials.sethome</code>  |
+| <code>/home</code>     | Teleport to your home           | <code>essentials.home</code>     |
+| <code>/delhome</code>  | Delete a home                   | <code>essentials.delhome</code>  |
+| <code>/setwarp</code>  | Set a server warp               | <code>essentials.setwarp</code>  |
+| <code>/warp</code>     | Teleport to a warp              | <code>essentials.warp</code>     |
+| <code>/delwarp</code>  | Delete a warp                   | <code>essentials.delwarp</code>  |
+| <code>/setspawn</code> | Set server spawn                | <code>essentials.setspawn</code> |
+| <code>/spawn</code>    | Teleport to spawn               | <code>essentials.spawn</code>    |
+| <code>/tpa</code>      | Request to teleport to a player | <code>essentials.tpa</code>      |
+| <code>/tpaccept</code> | Accept a teleport request       | <code>essentials.tpaccept</code> |
 
 # Permissions
 
-| Permission                | Description                            |
-|---------------------------|----------------------------------------|
-| `essentials.sethome`      | Set homes                              |
-| `essentials.home`         | Teleport to homes                      |
-| `essentials.delhome`      | Delete homes                           |
-| `essentials.setwarp`      | Create warps                           |
-| `essentials.warp`         | Teleport to warps                      |
-| `essentials.delwarp`      | Delete warps                           |
-| `essentials.setspawn`     | Set server spawn                       |
-| `essentials.spawn`        | Teleport to spawn                      |
-| `essentials.tpa`          | Send teleport requests                 |
-| `essentials.tpaccept`     | Accept teleport requests               |
-| `essentials.build.bypass` | Build when global building is disabled |
-| `essentials.spawn.bypass` | Build in spawn protection area         |
+| Permission                           | Description                            |
+|--------------------------------------|----------------------------------------|
+| <code>essentials.sethome</code>      | Set homes                              |
+| <code>essentials.home</code>         | Teleport to homes                      |
+| <code>essentials.delhome</code>      | Delete homes                           |
+| <code>essentials.setwarp</code>      | Create warps                           |
+| <code>essentials.warp</code>         | Teleport to warps                      |
+| <code>essentials.delwarp</code>      | Delete warps                           |
+| <code>essentials.setspawn</code>     | Set server spawn                       |
+| <code>essentials.spawn</code>        | Teleport to spawn                      |
+| <code>essentials.tpa</code>          | Send teleport requests                 |
+| <code>essentials.tpaccept</code>     | Accept teleport requests               |
+| <code>essentials.build.bypass</code> | Build when global building is disabled |
+| <code>essentials.spawn.bypass</code> | Build in spawn protection area         |
 
-To add permissions to default users, edit your `permissions.json`:
-
-```json
-"groups": {
-  "Default": [],
-  "OP": ["*"],
-  "Mod": [
-    "essentials.setwarp",
-    "essentials.delwarp"
-  ]
-}
-```
+To setup permissions, please view these unofficial docs: [https://hytale-docs.pages.dev/modding/plugins/permissions/](https://hytale-docs.pages.dev/modding/plugins/permissions/)
 
 # Configuration
 
 Configuration is stored in `config.toml`. Key options:
 
 **Homes**
-- `homes.max-homes` - Max homes per player (default: 5)
+
+*   `homes.max-homes` - Max homes per player (default: 5)
 
 **Chat**
-- `chat.enabled` - Enable custom chat formatting
-- `chat.fallback-format` - Format for players without a rank
-- `chat.formats.<group>` - Format per permission group
-- Placeholders: `%player%`, `%message%`  
-- Color codes: `&0-&9`, `&a-&f`, `&#RRGGBB`
+
+*   `chat.enabled` - Enable custom chat formatting
+*   `chat.fallback-format` - Format for players without a rank
+*   `chat.formats.<group>` - Format per permission group
+*   Placeholders: `%player%`, `%message%`
+*   Color codes: `&0-&9`, `&a-&f`, `&#RRGGBB`
 
 **Build Protection**
-- `build.disable-building` - Disable building globally (bypass: `essentials.build.bypass`)
+
+*   `build.disable-building` - Disable building globally (bypass: <code>essentials.build.bypass</code>)
 
 **Spawn**
-- `spawn.first-join` - Teleport to spawn on first join (default: true)
-- `spawn.every-join` - Teleport to spawn on every join (default: false)
-- `spawn.death-spawn` - Teleport to spawn on death (default: true)
+
+*   `spawn.first-join` - Teleport to spawn on first join (default: true)
+*   `spawn.every-join` - Teleport to spawn on every join (default: false)
+*   `spawn.death-spawn` - Teleport to spawn on death (default: true)
 
 **Spawn Protection**
-- `spawn-protection.enabled` - Enable spawn area protection
-- `spawn-protection.radius` - Protection radius in blocks (default: 16)
-- `spawn-protection.min-y` / `max-y` - Y range limit (-1 to disable)
-- `spawn-protection.prevent-pvp` - Disable PvP in spawn
-- `spawn-protection.show-titles` - Show enter/exit titles
-- `spawn-protection.enter-title` / `enter-subtitle` - Title on enter
-- `spawn-protection.exit-title` / `exit-subtitle` - Title on exit
+
+*   `spawn-protection.enabled` - Enable spawn area protection
+*   `spawn-protection.radius` - Protection radius in blocks (default: 16)
+*   `spawn-protection.min-y` / `max-y` - Y range limit (-1 to disable)
+*   `spawn-protection.prevent-pvp` - Disable PvP in spawn
+*   `spawn-protection.show-titles` - Show enter/exit titles
+*   `spawn-protection.enter-title` / `enter-subtitle` - Title on enter
+*   `spawn-protection.exit-title` / `exit-subtitle` - Title on exit
 
 # Community & Support
 
 Join our Discord for support, bugs, and suggestions:  
-https://discord.gg/z53BDHS89M
+[https://discord.gg/z53BDHS89M](https://discord.gg/z53BDHS89M)
 
----
+***
 
 Note: Essentials is inspired by but not affiliated with the EssentialsX Minecraft plugin.
