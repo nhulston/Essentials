@@ -27,7 +27,21 @@ Default = "&0[&fPlayer&0] &f%player%: %message%"
 # Players with essentials.build.bypass permission can still build
 disable-building = false
 
+[spawn]
+# This section requires a spawn to be set with /setspawn
+
+# Teleport players to spawn on first join
+first-join = true
+
+# Teleport players to spawn on every join (useful for hub servers or minigames)
+every-join = false
+
+# Teleport players to spawn on death
+death-spawn = true
+
 [spawn-protection]
+# This section requires a spawn to be set with /setspawn
+
 # Enable spawn protection (prevents block breaking/placing/damage)
 # Players with essentials.spawn.bypass permission can still build
 enabled = true

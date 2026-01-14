@@ -20,11 +20,8 @@ public class SpawnCommand extends AbstractPlayerCommand {
     public SpawnCommand(@Nonnull SpawnManager spawnManager) {
         super("spawn", "Teleport to the server spawn");
         this.spawnManager = spawnManager;
-    }
 
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
+        requirePermission("essentials.spawn");
     }
 
     @Override
@@ -37,9 +34,7 @@ public class SpawnCommand extends AbstractPlayerCommand {
             return;
         }
 
-        String error = TeleportUtil.teleport(store, ref, spawn.getWorld(),
-                spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getPitch());
-
+        String error = TeleportUtil.teleportToSpawn(playerRef, spawn);
         if (error != null) {
             Msg.fail(context, error);
             return;

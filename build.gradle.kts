@@ -3,8 +3,8 @@ plugins {
     id("com.gradleup.shadow") version "9.3.1"
 }
 
-group = findProperty("pluginGroup") as String? ?: "com.example"
-version = findProperty("pluginVersion") as String? ?: "1.0.0"
+group = findProperty("pluginGroup") as String? ?: "com.nhulston"
+version = findProperty("pluginVersion") as String? ?: "1.1.0"
 description = findProperty("pluginDescription") as String? ?: "Your Essentials for a Hytale server"
 
 repositories {

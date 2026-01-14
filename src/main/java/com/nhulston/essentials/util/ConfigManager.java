@@ -28,6 +28,11 @@ public class ConfigManager {
     // Build settings
     private boolean disableBuilding = false;
 
+    // Spawn settings
+    private boolean firstJoinSpawnEnabled = true;
+    private boolean everyJoinSpawnEnabled = false;
+    private boolean deathSpawnEnabled = true;
+
     // Spawn protection settings
     private boolean spawnProtectionEnabled = true;
     private int spawnProtectionRadius = DEFAULT_SPAWN_PROTECTION_RADIUS;
@@ -80,6 +85,11 @@ public class ConfigManager {
 
             // Build config
             disableBuilding = config.getBoolean("build.disable-building", () -> false);
+
+            // Spawn config
+            firstJoinSpawnEnabled = config.getBoolean("spawn.first-join", () -> true);
+            everyJoinSpawnEnabled = config.getBoolean("spawn.every-join", () -> false);
+            deathSpawnEnabled = config.getBoolean("spawn.death-spawn", () -> true);
 
             // Spawn protection config
             spawnProtectionEnabled = config.getBoolean("spawn-protection.enabled", () -> true);
@@ -139,6 +149,18 @@ public class ConfigManager {
 
     public boolean isBuildingDisabled() {
         return disableBuilding;
+    }
+
+    public boolean isFirstJoinSpawnEnabled() {
+        return firstJoinSpawnEnabled;
+    }
+
+    public boolean isEveryJoinSpawnEnabled() {
+        return everyJoinSpawnEnabled;
+    }
+
+    public boolean isDeathSpawnEnabled() {
+        return deathSpawnEnabled;
     }
 
     public boolean isSpawnProtectionEnabled() {

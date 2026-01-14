@@ -25,13 +25,8 @@ public class SetHomeCommand extends AbstractPlayerCommand {
         super("sethome", "Set your home location");
         this.homeManager = homeManager;
 
-        // Add variant with name argument: /sethome <name>
+        requirePermission("essentials.sethome");
         addUsageVariant(new SetHomeNamedCommand(homeManager));
-    }
-
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
     }
 
     @Override
@@ -82,11 +77,6 @@ public class SetHomeCommand extends AbstractPlayerCommand {
             super("Set your home location with a name");
             this.homeManager = homeManager;
             this.nameArg = withRequiredArg("name", "Home name", ArgTypes.STRING);
-        }
-
-        @Override
-        protected boolean canGeneratePermission() {
-            return false;
         }
 
         @Override
