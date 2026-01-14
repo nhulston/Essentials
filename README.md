@@ -35,6 +35,7 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 | <code>/kit</code>        | Open kit selection GUI           | <code>essentials.kit</code>        |
 | <code>/kit create</code> | Create a kit from your inventory | <code>essentials.kit.create</code> |
 | <code>/kit delete</code> | Delete a kit                     | <code>essentials.kit.delete</code> |
+| <code>/back</code>       | Teleport to your last death      | <code>essentials.back</code>       |
 
 # Permissions
 
@@ -58,6 +59,7 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 | <code>essentials.kit.delete</code>          | Delete kits                            |
 | <code>essentials.kit.cooldown.bypass</code> | Bypass kit cooldowns                   |
 | <code>essentials.teleport.bypass</code>     | Bypass teleport delay                  |
+| <code>essentials.back</code>                | Teleport to last death location        |
 
 To setup permissions, please view these unofficial docs: [https://hytale-docs.pages.dev/modding/plugins/permissions/](https://hytale-docs.pages.dev/modding/plugins/permissions/)
 

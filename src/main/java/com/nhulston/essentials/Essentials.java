@@ -2,6 +2,7 @@ package com.nhulston.essentials;
 
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.nhulston.essentials.commands.back.BackCommand;
 import com.nhulston.essentials.commands.home.DelHomeCommand;
 import com.nhulston.essentials.commands.home.HomeCommand;
 import com.nhulston.essentials.commands.home.SetHomeCommand;
@@ -15,10 +16,12 @@ import com.nhulston.essentials.commands.warp.SetWarpCommand;
 import com.nhulston.essentials.commands.warp.WarpCommand;
 import com.nhulston.essentials.events.BuildProtectionEvent;
 import com.nhulston.essentials.events.ChatEvent;
+import com.nhulston.essentials.events.DeathLocationEvent;
 import com.nhulston.essentials.events.SpawnProtectionEvent;
 import com.nhulston.essentials.events.SpawnRegionTitleEvent;
 import com.nhulston.essentials.events.SpawnTeleportEvent;
 import com.nhulston.essentials.events.TeleportMovementEvent;
+import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.ChatManager;
 import com.nhulston.essentials.managers.HomeManager;
 import com.nhulston.essentials.managers.KitManager;
@@ -44,6 +47,7 @@ public class Essentials extends JavaPlugin {
     private TpaManager tpaManager;
     private TeleportManager teleportManager;
     private KitManager kitManager;
+    private BackManager backManager;
 
     public Essentials(@Nonnull JavaPluginInit init) {
         super(init);
@@ -65,6 +69,7 @@ public class Essentials extends JavaPlugin {
         tpaManager = new TpaManager();
         teleportManager = new TeleportManager(configManager);
         kitManager = new KitManager(getDataDirectory(), storageManager);
+        backManager = new BackManager();
     }
 
     @Override
@@ -114,6 +119,9 @@ public class Essentials extends JavaPlugin {
 
         // Kit command
         getCommandRegistry().registerCommand(new KitCommand(kitManager));
+
+        // Back command
+        getCommandRegistry().registerCommand(new BackCommand(backManager, teleportManager));
     }
 
     private void registerEvents() {
@@ -126,5 +134,8 @@ public class Essentials extends JavaPlugin {
         SpawnTeleportEvent spawnTeleportEvent = new SpawnTeleportEvent(spawnManager, configManager, storageManager);
         spawnTeleportEvent.registerEvents(getEventRegistry());
         spawnTeleportEvent.registerSystems(getEntityStoreRegistry());
+
+        // Death location tracking for /back
+        new DeathLocationEvent(backManager).register(getEntityStoreRegistry());
     }
 }
