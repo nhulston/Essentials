@@ -25,12 +25,8 @@ public class HomeCommand extends AbstractPlayerCommand {
         super("home", "Teleport to your home");
         this.homeManager = homeManager;
 
+        requirePermission("essentials.home");
         addUsageVariant(new HomeNamedCommand(homeManager));
-    }
-
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
     }
 
     @Override
@@ -80,11 +76,6 @@ public class HomeCommand extends AbstractPlayerCommand {
             super("Teleport to a specific home");
             this.homeManager = homeManager;
             this.nameArg = withRequiredArg("name", "Home name", ArgTypes.STRING);
-        }
-
-        @Override
-        protected boolean canGeneratePermission() {
-            return false;
         }
 
         @Override

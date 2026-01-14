@@ -22,11 +22,8 @@ public class DelHomeCommand extends AbstractPlayerCommand {
         super("delhome", "Delete a home");
         this.homeManager = homeManager;
         this.nameArg = withRequiredArg("name", "Home name", ArgTypes.STRING);
-    }
 
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
+        requirePermission("essentials.delhome");
     }
 
     @Override

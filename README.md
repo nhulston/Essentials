@@ -18,26 +18,33 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 
 # Commands
 
-| Command              | Description                     | Permission            |
-|----------------------|---------------------------------|-----------------------|
-| `/sethome <name>`    | Set a home                      |                       |
-| `/home <name>`       | Teleport to your home           |                       |
-| `/delhome <name>`    | Delete a home                   |                       |
-| `/setwarp <name>`    | Set a server warp               | `essentials.setwarp`  |
-| `/warp <name>`       | Teleport to a warp              |                       |
-| `/delwarp <name>`    | Delete a warp                   | `essentials.delwarp`  |
-| `/setspawn`          | Set server spawn                | `essentials.setspawn` |
-| `/spawn`             | Teleport to spawn               |                       |
-| `/tpa <player>`      | Request to teleport to a player |                       |
-| `/tpaccept <player>` | Accept a teleport request       |                       |
+| Command              | Description                     | Permission              |
+|----------------------|---------------------------------|-------------------------|
+| `/sethome <name>`    | Set a home                      | `essentials.sethome`    |
+| `/home <name>`       | Teleport to your home           | `essentials.home`       |
+| `/delhome <name>`    | Delete a home                   | `essentials.delhome`    |
+| `/setwarp <name>`    | Set a server warp               | `essentials.setwarp`    |
+| `/warp <name>`       | Teleport to a warp              | `essentials.warp`       |
+| `/delwarp <name>`    | Delete a warp                   | `essentials.delwarp`    |
+| `/setspawn`          | Set server spawn                | `essentials.setspawn`   |
+| `/spawn`             | Teleport to spawn               | `essentials.spawn`      |
+| `/tpa <player>`      | Request to teleport to a player | `essentials.tpa`        |
+| `/tpaccept <player>` | Accept a teleport request       | `essentials.tpaccept`   |
 
 # Permissions
 
 | Permission                | Description                            |
 |---------------------------|----------------------------------------|
+| `essentials.sethome`      | Set homes                              |
+| `essentials.home`         | Teleport to homes                      |
+| `essentials.delhome`      | Delete homes                           |
 | `essentials.setwarp`      | Create warps                           |
+| `essentials.warp`         | Teleport to warps                      |
 | `essentials.delwarp`      | Delete warps                           |
 | `essentials.setspawn`     | Set server spawn                       |
+| `essentials.spawn`        | Teleport to spawn                      |
+| `essentials.tpa`          | Send teleport requests                 |
+| `essentials.tpaccept`     | Accept teleport requests               |
 | `essentials.build.bypass` | Build when global building is disabled |
 | `essentials.spawn.bypass` | Build in spawn protection area         |
 

@@ -26,11 +26,8 @@ public class TpaCommand extends AbstractPlayerCommand {
         super("tpa", "Request to teleport to a player");
         this.tpaManager = tpaManager;
         this.targetArg = withRequiredArg("player", "Player to teleport to", ArgTypes.PLAYER_REF);
-    }
 
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
+        requirePermission("essentials.tpa");
     }
 
     @Override

@@ -28,11 +28,8 @@ public class TpacceptCommand extends AbstractPlayerCommand {
         super("tpaccept", "Accept a teleport request");
         this.tpaManager = tpaManager;
         this.playerArg = withRequiredArg("player", "Player whose request to accept", ArgTypes.STRING);
-    }
 
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
+        requirePermission("essentials.tpaccept");
     }
 
     @Override

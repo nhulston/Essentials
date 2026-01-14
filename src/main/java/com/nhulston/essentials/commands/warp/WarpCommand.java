@@ -24,12 +24,8 @@ public class WarpCommand extends AbstractPlayerCommand {
         super("warp", "Teleport to a warp");
         this.warpManager = warpManager;
 
+        requirePermission("essentials.warp");
         addUsageVariant(new WarpNamedCommand(warpManager));
-    }
-
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
     }
 
     @Override
@@ -54,11 +50,6 @@ public class WarpCommand extends AbstractPlayerCommand {
             super("Teleport to a specific warp");
             this.warpManager = warpManager;
             this.nameArg = withRequiredArg("name", "Warp name", ArgTypes.STRING);
-        }
-
-        @Override
-        protected boolean canGeneratePermission() {
-            return false;
         }
 
         @Override
