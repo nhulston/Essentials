@@ -42,6 +42,12 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 | <code>/rtp</code>        | Random teleport                  | <code>essentials.rtp</code>        |
 | <code>/list</code>       | List online players              | <code>essentials.list</code>       |
 | <code>/heal</code>       | Restore your health to full      | <code>essentials.heal</code>       |
+| <code>/freecam</code>    | Toggle freecam mode              | <code>essentials.freecam</code>    |
+| <code>/god</code>        | Toggle god mode (invincibility)  | <code>essentials.god</code>        |
+| <code>/msg</code>        | Send a private message           | <code>essentials.msg</code>        |
+| <code>/r</code>          | Reply to last message            | <code>essentials.msg</code>        |
+| <code>/tphere</code>     | Teleport a player to you         | <code>essentials.tphere</code>     |
+| <code>/top</code>        | Teleport to highest block        | <code>essentials.top</code>        |
 
 # Permissions
 
@@ -77,6 +83,11 @@ If you have a permissions mod, follow the instructions for that mod.
 | <code>essentials.rtp.cooldown.bypass</code> | Bypass RTP cooldown                                                                         |
 | <code>essentials.list</code>                | List online players                                                                         |
 | <code>essentials.heal</code>                | Restore health to full                                                                      |
+| <code>essentials.freecam</code>             | Toggle freecam mod                                                                          |
+| <code>essentials.god</code>                 | Toggle god mode (invincibility)                                                             |
+| <code>essentials.msg</code>                 | Send private messages and reply (aliases: /m, /message, /whisper, /pm, /r, /reply)          |
+| <code>essentials.tphere</code>              | Teleport players to you                                                                     |
+| <code>essentials.top</code>                 | Teleport to highest block                                                                   |
 
 # Configuration
 
