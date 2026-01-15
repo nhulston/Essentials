@@ -29,11 +29,11 @@ public final class TeleportUtil {
     /** Player height in blocks (need 2 air blocks for player to fit) */
     private static final int PLAYER_HEIGHT = 2;
 
-    // Cardinal direction yaw values
+    // Cardinal direction yaw values (in radians)
     private static final float YAW_NORTH = 0f;
-    private static final float YAW_EAST = -90f;
-    private static final float YAW_SOUTH = 180f;
-    private static final float YAW_WEST = 90f;
+    private static final float YAW_EAST = (float) Math.toRadians(-90);   // -π/2
+    private static final float YAW_SOUTH = (float) Math.PI;              // π
+    private static final float YAW_WEST = (float) Math.toRadians(90);   // π/2
 
     private TeleportUtil() {}
 
@@ -41,31 +41,34 @@ public final class TeleportUtil {
      * Rounds the yaw to the nearest cardinal direction.
      * Workaround for Hytale bug where teleporting while looking down causes player model issues.
      * 
-     * Cardinal directions:
+     * Hytale uses radians for rotation. Cardinal directions in radians:
      * - North: 0
-     * - East: -90
-     * - South: 180 (or -180)
-     * - West: 90
+     * - East: -π/2 (-1.5708)
+     * - South: π (3.1416)
+     * - West: π/2 (1.5708)
      *
-     * @param yaw The current yaw value
-     * @return The yaw rounded to the nearest cardinal direction
+     * @param yawRadians The current yaw value in radians
+     * @return The yaw rounded to the nearest cardinal direction (in radians)
      */
-    public static float roundToCardinalYaw(float yaw) {
+    public static float roundToCardinalYaw(float yawRadians) {
+        // Convert from radians to degrees for easier comparison
+        float yawDegrees = (float) Math.toDegrees(yawRadians);
+        
         // Normalize yaw to -180 to 180 range
-        yaw = yaw % 360;
-        if (yaw > 180) yaw -= 360;
-        if (yaw < -180) yaw += 360;
+        yawDegrees = yawDegrees % 360;
+        if (yawDegrees > 180) yawDegrees -= 360;
+        if (yawDegrees < -180) yawDegrees += 360;
 
-        // Find nearest cardinal direction
-        // North: 0, East: -90, South: 180/-180, West: 90
-        if (yaw >= -45 && yaw < 45) {
+        // Find nearest cardinal direction, return in radians
+        // North: 0°, East: -90°, South: 180°, West: 90°
+        if (yawDegrees >= -45 && yawDegrees < 45) {
             return YAW_NORTH; // 0
-        } else if (yaw >= 45 && yaw < 135) {
-            return YAW_WEST; // 90
-        } else if (yaw >= 135 || yaw < -135) {
-            return YAW_SOUTH; // 180
+        } else if (yawDegrees >= 45 && yawDegrees < 135) {
+            return YAW_WEST; // π/2
+        } else if (yawDegrees >= 135 || yawDegrees < -135) {
+            return YAW_SOUTH; // π
         } else {
-            return YAW_EAST; // -90
+            return YAW_EAST; // -π/2
         }
     }
 
