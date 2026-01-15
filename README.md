@@ -67,6 +67,7 @@ If you have a permissions mod, follow the instructions for that mod.
 | <code>essentials.sethome</code>             | Set homes                                                                                   |
 | <code>essentials.home</code>                | Teleport to homes                                                                           |
 | <code>essentials.delhome</code>             | Delete homes                                                                                |
+| <code>essentials.homes.TIER</code>          | Home limit for tier (e.g., essentials.homes.vip). Configure tiers in config.toml            |
 | <code>essentials.setwarp</code>             | Create warps                                                                                |
 | <code>essentials.warp</code>                | Teleport to warps                                                                           |
 | <code>essentials.delwarp</code>             | Delete warps                                                                                |

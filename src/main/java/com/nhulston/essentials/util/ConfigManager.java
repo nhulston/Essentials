@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +31,13 @@ public class ConfigManager {
     private static final int DEFAULT_RTP_RADIUS = 5000;
     private static final int DEFAULT_RTP_COOLDOWN = 300;
 
-    // Pattern to match top-level section headers like [section] or [section-name]
-    private static final Pattern SECTION_PATTERN = Pattern.compile("^\\[([a-zA-Z0-9_-]+)]\\s*$");
+    // Pattern to match section headers like [section], [section-name], or [section.subsection]
+    private static final Pattern SECTION_PATTERN = Pattern.compile("^\\[([a-zA-Z0-9_.-]+)]\\s*$");
 
     private final Path configPath;
-    private int maxHomes = DEFAULT_MAX_HOMES;
+
+    // Home limits by permission tier (e.g., essentials.homes.default -> 5)
+    private final HashMap<String, Integer> homeLimits = new HashMap<>();
 
     // Chat settings
     private boolean chatEnabled = true;
@@ -117,8 +120,17 @@ public class ConfigManager {
                 return;
             }
 
-            // Homes config
-            maxHomes = getIntSafe(config, "homes.max-homes", DEFAULT_MAX_HOMES);
+            // Homes config - load permission-based limits
+            homeLimits.clear();
+            TomlTable homeLimitsTable = config.getTable("homes.limits");
+            if (homeLimitsTable != null) {
+                for (String tier : homeLimitsTable.keySet()) {
+                    Long limit = homeLimitsTable.getLong(tier);
+                    if (limit != null) {
+                        homeLimits.put(tier.toLowerCase(), limit.intValue());
+                    }
+                }
+            }
 
             // Chat config
             chatEnabled = config.getBoolean("chat.enabled", () -> true);
@@ -281,8 +293,8 @@ public class ConfigManager {
     }
 
     /**
-     * Finds all top-level section names in a TOML config string.
-     * Only matches [section], not [section.subsection].
+     * Finds all section names in a TOML config string.
+     * Matches [section] and [section.subsection].
      */
     @Nonnull
     private Set<String> findTopLevelSections(@Nonnull String config) {
@@ -299,7 +311,7 @@ public class ConfigManager {
     }
 
     /**
-     * Extracts all top-level sections from a TOML config string.
+     * Extracts all sections from a TOML config string.
      * Returns a map of section name -> full section content (including header, comments, and values).
      */
     @Nonnull
@@ -380,8 +392,12 @@ public class ConfigManager {
         }
     }
 
-    public int getMaxHomes() {
-        return maxHomes;
+    /**
+     * Gets the home limits map (tier name -> limit).
+     */
+    @Nonnull
+    public Map<String, Integer> getHomeLimits() {
+        return homeLimits;
     }
 
     public boolean isChatEnabled() {

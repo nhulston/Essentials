@@ -1,8 +1,17 @@
 # Essentials Configuration
 
 [homes]
-# Maximum number of homes per player
-max-homes = 5
+# Home limits per permission tier
+# Players with essentials.homes.<tier> permission get the corresponding limit
+# E.g. essentials.homes.default will give them 3 homes
+# If a player has multiple tier permissions, they get the highest limit
+# Players without any home permission get the "default" tier limit
+
+[homes.limits]
+default = 3
+vip = 5
+mvp = 10
+admin = 50
 
 [chat]
 # Enable custom chat formatting
