@@ -2,6 +2,7 @@ package com.nhulston.essentials.commands.spawn;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -10,6 +11,7 @@ import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.spawn.GlobalSpawnProvider;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.managers.SpawnManager;
 import com.nhulston.essentials.util.Msg;
@@ -47,6 +49,13 @@ public class SetSpawnCommand extends AbstractPlayerCommand {
                 rotation.getY(),
                 rotation.getX()
         );
+
+        // Also update the world's spawn provider so the map marker updates
+        // Must create new Vector3d/Vector3f instances - Transform stores references, not copies!
+        Vector3d spawnPosition = new Vector3d(position.getX(), position.getY(), position.getZ());
+        Vector3f spawnRotation = new Vector3f(0, rotation.getY(), 0);
+        Transform spawnTransform = new Transform(spawnPosition, spawnRotation);
+        world.getWorldConfig().setSpawnProvider(new GlobalSpawnProvider(spawnTransform));
 
         Msg.success(context, "Spawn set!");
     }

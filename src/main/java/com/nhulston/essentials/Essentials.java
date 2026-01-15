@@ -2,6 +2,7 @@ package com.nhulston.essentials;
 
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.universe.world.events.AllWorldsLoadedEvent;
 import com.nhulston.essentials.commands.back.BackCommand;
 import com.nhulston.essentials.commands.freecam.FreecamCommand;
 import com.nhulston.essentials.commands.god.GodCommand;
@@ -198,5 +199,11 @@ public class Essentials extends JavaPlugin {
 
         // Player disconnect cleanup
         new PlayerQuitEvent(storageManager, tpaManager, teleportManager, backManager).register(getEventRegistry());
+
+        // Sync spawn provider with world config after all worlds are loaded
+        // This updates the spawn marker on the map
+        getEventRegistry().registerGlobal(AllWorldsLoadedEvent.class, event -> {
+            spawnManager.syncWorldSpawnProvider();
+        });
     }
 }
