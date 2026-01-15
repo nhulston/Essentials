@@ -73,6 +73,10 @@ public class ConfigManager {
     private boolean motdEnabled = true;
     private String motdMessage = "&6Welcome to the server, &e%player%&6!";
 
+    // Sleep settings
+    private boolean sleepEnabled = true;
+    private int sleepPercentage = 20;
+
     public ConfigManager(@Nonnull Path dataFolder) {
         this.configPath = dataFolder.resolve("config.toml");
         load();
@@ -146,6 +150,10 @@ public class ConfigManager {
             // MOTD config
             motdEnabled = config.getBoolean("motd.enabled", () -> true);
             motdMessage = config.getString("motd.message", () -> "&6Welcome to the server, &e%player%&6!");
+
+            // Sleep config
+            sleepEnabled = config.getBoolean("sleep.enabled", () -> true);
+            sleepPercentage = Math.toIntExact(config.getLong("sleep.percentage", () -> 20L));
 
             Log.info("Config loaded!");
         } catch (IOException e) {
@@ -416,5 +424,13 @@ public class ConfigManager {
     @Nonnull
     public String getMotdMessage() {
         return motdMessage;
+    }
+
+    public boolean isSleepEnabled() {
+        return sleepEnabled;
+    }
+
+    public int getSleepPercentage() {
+        return sleepPercentage;
     }
 }

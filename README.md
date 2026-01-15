@@ -4,15 +4,16 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 
 # Features
 
-- Homes (multi-home support)
-- Server warps
-- Server spawn with protection
-- TPA (teleport requests)
-- Kits (with cooldowns and GUI)
-- Chat formatting (per-rank)
-- Build protection (global or spawn-only)
-- Random teleport
-- /back on death
+*   Homes (multi-home support)
+*   Server warps
+*   Server spawn with protection
+*   TPA (teleport requests)
+*   Kits (with cooldowns and GUI)
+*   Chat formatting (per-rank)
+*   Build protection (global or spawn-only)
+*   Random teleport
+*   /back on death
+*   Sleep percentage
 
 ![Homes](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/homes.png) ![TPA](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/tpa.png) ![Warps](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/warps.png)
 
@@ -42,31 +43,36 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 
 # Permissions
 
-| Permission                                  | Description                            |
-|---------------------------------------------|----------------------------------------|
-| <code>essentials.sethome</code>             | Set homes                              |
-| <code>essentials.home</code>                | Teleport to homes                      |
-| <code>essentials.delhome</code>             | Delete homes                           |
-| <code>essentials.setwarp</code>             | Create warps                           |
-| <code>essentials.warp</code>                | Teleport to warps                      |
-| <code>essentials.delwarp</code>             | Delete warps                           |
-| <code>essentials.setspawn</code>            | Set server spawn                       |
-| <code>essentials.spawn</code>               | Teleport to spawn                      |
-| <code>essentials.tpa</code>                 | Send teleport requests                 |
-| <code>essentials.tpaccept</code>            | Accept teleport requests               |
-| <code>essentials.build.bypass</code>        | Build when global building is disabled |
-| <code>essentials.spawn.bypass</code>        | Build in spawn protection area         |
-| <code>essentials.kit</code>                 | Open kit selection GUI                 |
-| <code>essentials.kit.kitNameHere</code>     | Access to claim a specific kit         |
-| <code>essentials.kit.create</code>          | Create new kits                        |
-| <code>essentials.kit.delete</code>          | Delete kits                            |
-| <code>essentials.kit.cooldown.bypass</code> | Bypass kit cooldowns                   |
-| <code>essentials.teleport.bypass</code>     | Bypass teleport delay                  |
-| <code>essentials.back</code>                | Teleport to last death location        |
-| <code>essentials.rtp</code>                 | Random teleport                        |
-| <code>essentials.rtp.cooldown.bypass</code> | Bypass RTP cooldown                    |
+If you don't have a permissions mod, you can add a permission to all players with the command:
+`/perm group add Adventure essentials.kit`
 
-To setup permissions, please view these unofficial docs: [https://hytale-docs.pages.dev/modding/plugins/permissions/](https://hytale-docs.pages.dev/modding/plugins/permissions/)
+If you have a permissions mod, follow the instructions for that mod.
+
+**NOTE**: Permissions are case sensitive!
+
+| Permission                                  | Description                                                                                 |
+|---------------------------------------------|---------------------------------------------------------------------------------------------|
+| <code>essentials.sethome</code>             | Set homes                                                                                   |
+| <code>essentials.home</code>                | Teleport to homes                                                                           |
+| <code>essentials.delhome</code>             | Delete homes                                                                                |
+| <code>essentials.setwarp</code>             | Create warps                                                                                |
+| <code>essentials.warp</code>                | Teleport to warps                                                                           |
+| <code>essentials.delwarp</code>             | Delete warps                                                                                |
+| <code>essentials.setspawn</code>            | Set server spawn                                                                            |
+| <code>essentials.spawn</code>               | Teleport to spawn                                                                           |
+| <code>essentials.tpa</code>                 | Send teleport requests                                                                      |
+| <code>essentials.tpaccept</code>            | Accept teleport requests                                                                    |
+| <code>essentials.build.bypass</code>        | Build when global building is disabled                                                      |
+| <code>essentials.spawn.bypass</code>        | Build in spawn protection area                                                              |
+| <code>essentials.kit</code>                 | Open kit selection GUI                                                                      |
+| <code>essentials.kit.kitname</code>         | Access to claim a specific kit. Kit names are case sensitive--they should be all lowercase! |
+| <code>essentials.kit.create</code>          | Create new kits                                                                             |
+| <code>essentials.kit.delete</code>          | Delete kits                                                                                 |
+| <code>essentials.kit.cooldown.bypass</code> | Bypass kit cooldowns                                                                        |
+| <code>essentials.teleport.bypass</code>     | Bypass teleport delay                                                                       |
+| <code>essentials.back</code>                | Teleport to last death location                                                             |
+| <code>essentials.rtp</code>                 | Random teleport                                                                             |
+| <code>essentials.rtp.cooldown.bypass</code> | Bypass RTP cooldown                                                                         |
 
 # Configuration
 
@@ -86,7 +92,7 @@ Configuration is stored in `config.toml`. Key options:
 
 **Build Protection**
 
-*   `build.disable-building` - Disable building globally (bypass: <code>essentials.build.bypass</code>)
+*   `build.disable-building` - Disable building globally (bypass: `essentials.build.bypass`)
 
 **Teleport**
 

@@ -86,6 +86,13 @@ message = """
 &7Type &f/help &7for a list of commands.
 """
 
+[sleep]
+# Skip night when a percentage of players in a world are sleeping
+enabled = true
+
+# Percentage of players needed to skip night (0-100)
+percentage = 20
+
 [rtp]
 # Random teleport settings
 
