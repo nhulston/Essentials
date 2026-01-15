@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.managers.TpaManager;
 import com.nhulston.essentials.util.Msg;
+import com.nhulston.essentials.util.SoundUtil;
 
 import javax.annotation.Nonnull;
 
@@ -55,6 +56,7 @@ public class TpaCommand extends AbstractPlayerCommand {
         Msg.success(context, "Teleport request sent to " + target.getUsername() + ".");
 
         // Notify the target
+        SoundUtil.playSound(target, "SFX_Alchemy_Bench_Close");
         Msg.info(target, playerRef.getUsername() + " has requested to teleport to you.");
         Msg.info(target, "Type '/tpaccept " + playerRef.getUsername() + "' to accept.");
     }
