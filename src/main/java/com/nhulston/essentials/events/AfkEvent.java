@@ -67,7 +67,7 @@ public class AfkEvent {
 
     public void registerSystems(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
         registry.registerSystem(new PlayerDamageEventSystem(storageManager));
-        registry.registerSystem(new PlayerMovementSystem(storageManager));
+        registry.registerSystem(playerMovementSystem);
     }
 
     private static class PlayerDamageEventSystem extends DamageEventSystem {
@@ -113,29 +113,26 @@ public class AfkEvent {
         }
 
         public void tick(float dt, int index, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-            Ref<EntityStore> entityRef = archetypeChunk.getReferenceTo(index);
-            if (entityRef.isValid()) return;
+            PlayerRef player = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
+            if (player == null) return;
 
-            PlayerRef playerRef = store.getComponent(entityRef, PlayerRef.getComponentType());
-            if (playerRef != null) {
-                UUID playerUuid = playerRef.getUuid();
-                TransformComponent transform = archetypeChunk.getComponent(index, TRANSFORM_COMPONENT_TYPE);
-                if (transform != null) {
-                    Vector3d currentPosition = transform.getPosition();
-                    Vector3d previousPosition = this.previousPositions.get(playerUuid);
+            UUID playerUuid = player.getUuid();
+            TransformComponent transform = archetypeChunk.getComponent(index, TRANSFORM_COMPONENT_TYPE);
+            if (transform != null) {
+                Vector3d currentPosition = transform.getPosition();
+                Vector3d previousPosition = this.previousPositions.get(playerUuid);
 
-                    if (previousPosition != null) {
-                        double distance = currentPosition.distanceTo(previousPosition);
+                if (previousPosition != null) {
+                    double distance = currentPosition.distanceSquaredTo(previousPosition);
 
-                        // Player has moved
-                        if (distance > 0.1) {
-                            PlayerData playerData = storageManager.getPlayerData(playerRef.getUuid());
-                            playerData.updateActivity();
-                        }
+                    // Player has moved
+                    if (distance > 0.01) {
+                        PlayerData playerData = storageManager.getPlayerData(player.getUuid());
+                        playerData.updateActivity();
                     }
-
-                    this.previousPositions.put(playerUuid, new Vector3d(currentPosition));
                 }
+
+                this.previousPositions.put(playerUuid, new Vector3d(currentPosition));
             }
         }
 
