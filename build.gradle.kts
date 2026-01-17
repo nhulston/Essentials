@@ -54,7 +54,7 @@ tasks {
     shadowJar {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("")
-        destinationDirectory.set(file("/mnt/c/Users/Nicholas/Development/hytale-server/mods"))
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
 
         // Relocate dependencies to avoid conflicts
         relocate("com.google.gson", "com.nhulston.libs.gson")

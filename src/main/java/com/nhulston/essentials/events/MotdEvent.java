@@ -5,6 +5,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.event.EventRegistry;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.util.ColorUtil;
 import com.nhulston.essentials.util.ConfigManager;
@@ -26,7 +27,7 @@ public class MotdEvent {
             if (!configManager.isMotdEnabled()) {
                 return;
             }
-            
+
             Ref<EntityStore> ref = event.getPlayerRef();
             if (!ref.isValid()) {
                 return;
@@ -38,22 +39,34 @@ public class MotdEvent {
                 return;
             }
 
-            String message = configManager.getMotdMessage();
-            String playerName = playerRef.getUsername();
-            
-            // Replace placeholder
-            message = message.replace("%player%", playerName);
-            
-            // Normalize line endings (remove \r from Windows line endings)
-            message = message.replace("\r", "");
-            
-            // Split by newlines and send each line
-            String[] lines = message.split("\n");
-            for (String line : lines) {
-                if (!line.trim().isEmpty()) {
-                    playerRef.sendMessage(ColorUtil.colorize(line));
-                }
+            // Schedule on world thread to avoid threading issues
+            World world = store.getExternalData().getWorld();
+            if (world == null) {
+                return;
             }
+
+            world.execute(() -> {
+                if (!ref.isValid()) {
+                    return;
+                }
+
+                String message = configManager.getMotdMessage();
+                String playerName = playerRef.getUsername();
+
+                // Replace placeholder
+                message = message.replace("%player%", playerName);
+
+                // Normalize line endings (remove \r from Windows line endings)
+                message = message.replace("\r", "");
+
+                // Split by newlines and send each line
+                String[] lines = message.split("\n");
+                for (String line : lines) {
+                    if (!line.trim().isEmpty()) {
+                        playerRef.sendMessage(ColorUtil.colorize(line));
+                    }
+                }
+            });
         });
     }
 }
