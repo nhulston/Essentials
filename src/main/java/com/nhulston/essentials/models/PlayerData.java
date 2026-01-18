@@ -11,6 +11,8 @@ public class PlayerData {
     private Long lastRepairTime;
     private Long lastRtpTime;
 
+    private long lastActivity = System.currentTimeMillis();
+
     public PlayerData() {
         this.homes = new HashMap<>();
         this.kitCooldowns = new HashMap<>();
@@ -88,4 +90,13 @@ public class PlayerData {
         this.lastRtpTime = timestamp;
     }
 
+    // Activity methods
+
+    public long getLastActivity() {
+        return lastActivity;
+    }
+
+    public void updateActivity() {
+        lastActivity = System.currentTimeMillis();
+    }
 }

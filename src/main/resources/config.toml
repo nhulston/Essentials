@@ -93,6 +93,13 @@ enter-subtitle = "This is a protected area"
 exit-title = "Leaving Spawn"
 exit-subtitle = "You can now build"
 
+[afk]
+# Message shown when player exceeds the idling threshold
+kick-message = "You have been kicked for idling more than %period% seconds!"
+# Time in seconds before a player is considered AFK.
+# Setting to 0 disables AFK kicking.
+threshold = 300
+
 [motd]
 # Message of the day shown to players on join
 # Placeholders: %player% = player name
