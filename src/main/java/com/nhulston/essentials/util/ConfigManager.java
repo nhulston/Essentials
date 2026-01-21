@@ -49,10 +49,6 @@ public class ConfigManager {
     private boolean everyJoinSpawnEnabled = false;
     private boolean deathSpawnEnabled = true;
 
-    // Welcome broadcast settings
-    private boolean welcomeBroadcastEnabled = true;
-    private String welcomeBroadcastMessage = "&e%player% &6has joined the server for the first time!";
-
     // Teleport settings
     private int teleportDelay = DEFAULT_TELEPORT_DELAY;
 
@@ -86,6 +82,13 @@ public class ConfigManager {
 
     // Repair settings
     private int repairCooldown = 43200;
+
+    // Join/Leave message settings
+    private boolean joinMessageEnabled = true;
+    private String joinMessage = "&e%player% &ajoined the game";
+    private String firstJoinMessage = "&e%player% &6joined the game for the first time!";
+    private boolean leaveMessageEnabled = true;
+    private String leaveMessage = "&e%player% &cleft the game";
 
     public ConfigManager(@Nonnull Path dataFolder) {
         this.configPath = dataFolder.resolve("config.toml");
@@ -156,11 +159,6 @@ public class ConfigManager {
             everyJoinSpawnEnabled = config.getBoolean("spawn.every-join", () -> false);
             deathSpawnEnabled = config.getBoolean("spawn.death-spawn", () -> true);
 
-            // Welcome broadcast config
-            welcomeBroadcastEnabled = config.getBoolean("welcome-broadcast.enabled", () -> true);
-            welcomeBroadcastMessage = config.getString("welcome-broadcast.message", 
-                    () -> "&e%player% &6has joined the server for the first time!");
-
             // Teleport config
             teleportDelay = getIntSafe(config, "teleport.delay", DEFAULT_TELEPORT_DELAY);
 
@@ -206,6 +204,13 @@ public class ConfigManager {
 
             // Repair config
             repairCooldown = getIntSafe(config, "repair.cooldown", 43200);
+
+            // Join/Leave messages config
+            joinMessageEnabled = config.getBoolean("join-leave-messages.join-enabled", () -> true);
+            joinMessage = config.getString("join-leave-messages.join-message", () -> "&8[&a+&8] &7%player%");
+            firstJoinMessage = config.getString("join-leave-messages.first-join-message", () -> "&e%player% &6joined the game for the first time!");
+            leaveMessageEnabled = config.getBoolean("join-leave-messages.leave-enabled", () -> true);
+            leaveMessage = config.getString("join-leave-messages.leave-message", () -> "&8[&c-&8] &7%player%");
 
             Log.info("Config loaded!");
         } catch (Exception e) {
@@ -445,15 +450,6 @@ public class ConfigManager {
         return deathSpawnEnabled;
     }
 
-    public boolean isWelcomeBroadcastEnabled() {
-        return welcomeBroadcastEnabled;
-    }
-
-    @Nonnull
-    public String getWelcomeBroadcastMessage() {
-        return welcomeBroadcastMessage;
-    }
-
     public int getTeleportDelay() {
         return teleportDelay;
     }
@@ -543,5 +539,28 @@ public class ConfigManager {
 
     public int getRepairCooldown() {
         return repairCooldown;
+    }
+
+    public boolean isJoinMessageEnabled() {
+        return joinMessageEnabled;
+    }
+
+    @Nonnull
+    public String getJoinMessage() {
+        return joinMessage;
+    }
+
+    @Nonnull
+    public String getFirstJoinMessage() {
+        return firstJoinMessage;
+    }
+
+    public boolean isLeaveMessageEnabled() {
+        return leaveMessageEnabled;
+    }
+
+    @Nonnull
+    public String getLeaveMessage() {
+        return leaveMessage;
     }
 }

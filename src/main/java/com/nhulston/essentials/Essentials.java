@@ -30,6 +30,7 @@ import com.nhulston.essentials.commands.warp.WarpCommand;
 import com.nhulston.essentials.events.BuildProtectionEvent;
 import com.nhulston.essentials.events.ChatEvent;
 import com.nhulston.essentials.events.DeathLocationEvent;
+import com.nhulston.essentials.events.JoinLeaveMessageEvent;
 import com.nhulston.essentials.events.MotdEvent;
 import com.nhulston.essentials.events.PlayerQuitEvent;
 import com.nhulston.essentials.events.SpawnProtectionEvent;
@@ -205,6 +206,9 @@ public class Essentials extends JavaPlugin {
 
         // MOTD on join
         new MotdEvent(configManager).register(getEventRegistry());
+
+        // Join/leave broadcast messages
+        new JoinLeaveMessageEvent(configManager, storageManager).register(getEventRegistry());
 
         // Update notification for admins
         new UpdateNotifyEvent(versionChecker).register(getEventRegistry());

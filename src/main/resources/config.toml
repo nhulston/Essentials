@@ -17,6 +17,10 @@ admin = 50
 # Enable custom chat formatting
 enabled = true
 
+# For users using LuckPerms, PLEASE READ:
+# In your LuckPerms config, disable `chat-formatter`, and let Essentials handle chat formatting.
+# Join our Discord and see #faq for more information.
+
 # Fallback format for players without a configured rank
 # Placeholders: %player% = player name, %message% = chat message
 # Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)
@@ -53,15 +57,6 @@ every-join = false
 
 # Teleport players to spawn on death
 death-spawn = true
-
-[welcome-broadcast]
-# Broadcast a message to all players when someone joins for the first time
-enabled = true
-
-# Message to broadcast
-# Placeholders: %player% = player name
-# Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)
-message = "&e%player% &6has joined the server for the first time!"
 
 [spawn-protection]
 # This section requires a spawn to be set with /setspawn
@@ -140,3 +135,18 @@ prefix = "&0[&7Broadcast&0] &f"
 # Cooldown in seconds between /repair uses (0 to disable)
 # Default: 43200 (12 hours)
 cooldown = 43200
+
+[join-leave-messages]
+# Broadcast messages when players join or leave the server
+
+# Join messages
+join-enabled = true
+join-message = "&8[&a+&8] &7%player%"
+first-join-message = "&e%player% &6joined the game for the first time!"
+
+# Leave messages
+leave-enabled = true
+leave-message = "&8[&c-&8] &7%player%"
+
+# Placeholders: %player% = player name
+# Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)

@@ -20,6 +20,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.tomlj:tomlj:1.1.1")
     implementation("org.jetbrains:annotations:24.1.0")
+    implementation("org.ow2.asm:asm:9.7")
 
     // Test dependencies
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
