@@ -3,6 +3,7 @@ package com.nhulston.essentials.commands.home;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
@@ -10,6 +11,7 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.HomeManager;
 import com.nhulston.essentials.managers.TeleportManager;
 import com.nhulston.essentials.models.Home;
@@ -22,15 +24,18 @@ import java.util.UUID;
 public class HomeCommand extends AbstractPlayerCommand {
     private final HomeManager homeManager;
     private final TeleportManager teleportManager;
+    private final BackManager backManager;
 
-    public HomeCommand(@Nonnull HomeManager homeManager, @Nonnull TeleportManager teleportManager) {
+    public HomeCommand(@Nonnull HomeManager homeManager, @Nonnull TeleportManager teleportManager,
+                      @Nonnull BackManager backManager) {
         super("home", "Teleport to your home");
         this.homeManager = homeManager;
         this.teleportManager = teleportManager;
+        this.backManager = backManager;
 
         addAliases("homes");
         requirePermission("essentials.home");
-        addUsageVariant(new HomeNamedCommand(homeManager, teleportManager));
+        addUsageVariant(new HomeNamedCommand(homeManager, teleportManager, backManager));
     }
 
     @Override
@@ -46,7 +51,7 @@ public class HomeCommand extends AbstractPlayerCommand {
 
         if (homes.size() == 1) {
             String homeName = homes.keySet().iterator().next();
-            doTeleportToHome(context, store, ref, playerRef, homeName, homeManager, teleportManager);
+            doTeleportToHome(context, store, ref, playerRef, currentWorld, homeName, homeManager, teleportManager, backManager);
         } else {
             Msg.prefix(context, "Homes", String.join(", ", homes.keySet()));
         }
@@ -54,13 +59,21 @@ public class HomeCommand extends AbstractPlayerCommand {
 
     static void doTeleportToHome(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                                  @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef,
-                                 @Nonnull String homeName, @Nonnull HomeManager homeManager,
-                                 @Nonnull TeleportManager teleportManager) {
+                                 @Nonnull World currentWorld, @Nonnull String homeName,
+                                 @Nonnull HomeManager homeManager, @Nonnull TeleportManager teleportManager,
+                                 @Nonnull BackManager backManager) {
         Home home = homeManager.getHome(playerRef.getUuid(), homeName);
         if (home == null) {
             Msg.fail(context, "Home '" + homeName + "' not found.");
             return;
         }
+
+        // Save current location before teleporting
+        Vector3d currentPos = playerRef.getTransform().getPosition();
+        Vector3f currentRot = playerRef.getTransform().getRotation();
+        backManager.setTeleportLocation(playerRef.getUuid(), currentWorld.getName(),
+            currentPos.getX(), currentPos.getY(), currentPos.getZ(),
+            currentRot.getY(), currentRot.getX());
 
         Vector3d startPosition = playerRef.getTransform().getPosition();
         
@@ -74,12 +87,15 @@ public class HomeCommand extends AbstractPlayerCommand {
     private static class HomeNamedCommand extends AbstractPlayerCommand {
         private final HomeManager homeManager;
         private final TeleportManager teleportManager;
+        private final BackManager backManager;
         private final RequiredArg<String> nameArg;
 
-        HomeNamedCommand(@Nonnull HomeManager homeManager, @Nonnull TeleportManager teleportManager) {
+        HomeNamedCommand(@Nonnull HomeManager homeManager, @Nonnull TeleportManager teleportManager,
+                        @Nonnull BackManager backManager) {
             super("Teleport to a specific home");
             this.homeManager = homeManager;
             this.teleportManager = teleportManager;
+            this.backManager = backManager;
             this.nameArg = withRequiredArg("name", "Home name", ArgTypes.STRING);
         }
 
@@ -87,7 +103,7 @@ public class HomeCommand extends AbstractPlayerCommand {
         protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                                @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
             String homeName = context.get(nameArg);
-            doTeleportToHome(context, store, ref, playerRef, homeName, homeManager, teleportManager);
+            doTeleportToHome(context, store, ref, playerRef, world, homeName, homeManager, teleportManager, backManager);
         }
     }
 }

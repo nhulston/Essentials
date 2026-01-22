@@ -3,6 +3,7 @@ package com.nhulston.essentials.commands.rtp;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
@@ -10,6 +11,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.TeleportManager;
 import com.nhulston.essentials.models.PlayerData;
 import com.nhulston.essentials.util.ConfigManager;
@@ -34,13 +36,15 @@ public class RtpCommand extends AbstractPlayerCommand {
     private final ConfigManager configManager;
     private final StorageManager storageManager;
     private final TeleportManager teleportManager;
+    private final BackManager backManager;
 
     public RtpCommand(@Nonnull ConfigManager configManager, @Nonnull StorageManager storageManager,
-                      @Nonnull TeleportManager teleportManager) {
+                      @Nonnull TeleportManager teleportManager, @Nonnull BackManager backManager) {
         super("rtp", "Randomly teleport to a location");
         this.configManager = configManager;
         this.storageManager = storageManager;
         this.teleportManager = teleportManager;
+        this.backManager = backManager;
 
         requirePermission("essentials.rtp");
     }
@@ -94,6 +98,13 @@ public class RtpCommand extends AbstractPlayerCommand {
 
         boolean isCrossWorld = !rtpWorldName.equals(currentWorldName);
         
+        // Save current location before teleporting
+        Vector3d currentPos = playerRef.getTransform().getPosition();
+        Vector3f currentRot = playerRef.getTransform().getRotation();
+        backManager.setTeleportLocation(playerUuid, currentWorldName,
+            currentPos.getX(), currentPos.getY(), currentPos.getZ(),
+            currentRot.getY(), currentRot.getX());
+
         if (isCrossWorld) {
             // Cross-world RTP - use async chunk loading
             // Capture start position now, on the correct thread

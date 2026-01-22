@@ -131,21 +131,21 @@ public class Essentials extends JavaPlugin {
     private void registerCommands() {
         // Home commands
         getCommandRegistry().registerCommand(new SetHomeCommand(homeManager));
-        getCommandRegistry().registerCommand(new HomeCommand(homeManager, teleportManager));
+        getCommandRegistry().registerCommand(new HomeCommand(homeManager, teleportManager, backManager));
         getCommandRegistry().registerCommand(new DelHomeCommand(homeManager));
 
         // Warp commands
         getCommandRegistry().registerCommand(new SetWarpCommand(warpManager));
-        getCommandRegistry().registerCommand(new WarpCommand(warpManager, teleportManager));
+        getCommandRegistry().registerCommand(new WarpCommand(warpManager, teleportManager, backManager));
         getCommandRegistry().registerCommand(new DelWarpCommand(warpManager));
 
         // Spawn commands
         getCommandRegistry().registerCommand(new SetSpawnCommand(spawnManager));
-        getCommandRegistry().registerCommand(new SpawnCommand(spawnManager, teleportManager));
+        getCommandRegistry().registerCommand(new SpawnCommand(spawnManager, teleportManager, backManager));
 
         // TPA commands
         getCommandRegistry().registerCommand(new TpaCommand(tpaManager));
-        getCommandRegistry().registerCommand(new TpacceptCommand(tpaManager, teleportManager));
+        getCommandRegistry().registerCommand(new TpacceptCommand(tpaManager, teleportManager, backManager));
 
         // Kit command
         getCommandRegistry().registerCommand(new KitCommand(kitManager));
@@ -154,7 +154,7 @@ public class Essentials extends JavaPlugin {
         getCommandRegistry().registerCommand(new BackCommand(backManager, teleportManager));
 
         // RTP command
-        getCommandRegistry().registerCommand(new RtpCommand(configManager, storageManager, teleportManager));
+        getCommandRegistry().registerCommand(new RtpCommand(configManager, storageManager, teleportManager, backManager));
 
         // List command
         getCommandRegistry().registerCommand(new ListCommand());
