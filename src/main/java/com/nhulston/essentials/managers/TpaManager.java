@@ -57,6 +57,16 @@ public class TpaManager {
     }
 
     /**
+     * Accepts the most recent teleport request.
+     * @param target The player accepting the request
+     * @return The TpaRequest if found and valid, null otherwise
+     */
+    @Nullable
+    public TpaRequest acceptMostRecentRequest(@Nonnull PlayerRef target) {
+        return acceptRequestInternal(target, null);
+    }
+
+    /**
      * Accepts a teleport request from a specific player.
      * @param target The player accepting the request
      * @param requesterName The name of the requester
@@ -64,6 +74,11 @@ public class TpaManager {
      */
     @Nullable
     public TpaRequest acceptRequest(@Nonnull PlayerRef target, @Nonnull String requesterName) {
+        return acceptRequestInternal(target, requesterName);
+    }
+
+    @Nullable
+    private TpaRequest acceptRequestInternal(@Nonnull PlayerRef target, @Nullable String requesterName) {
         UUID targetUuid = target.getUuid();
         ConcurrentHashMap<UUID, TpaRequest> targetRequests = pendingRequests.get(targetUuid);
         
@@ -71,15 +86,29 @@ public class TpaManager {
             return null;
         }
         
-        // Find the request by requester name (case-insensitive)
         TpaRequest foundRequest = null;
         UUID foundRequesterUuid = null;
         
-        for (Map.Entry<UUID, TpaRequest> entry : targetRequests.entrySet()) {
-            if (entry.getValue().getRequesterName().equalsIgnoreCase(requesterName)) {
-                foundRequest = entry.getValue();
-                foundRequesterUuid = entry.getKey();
-                break;
+        if (requesterName == null) {
+            // Find the most recent request by timestamp
+            long mostRecentTimestamp = 0;
+            
+            for (Map.Entry<UUID, TpaRequest> entry : targetRequests.entrySet()) {
+                TpaRequest request = entry.getValue();
+                if (request.getTimestamp() > mostRecentTimestamp) {
+                    foundRequest = request;
+                    foundRequesterUuid = entry.getKey();
+                    mostRecentTimestamp = request.getTimestamp();
+                }
+            }
+        } else {
+            // Find the request by requester name (case-insensitive)
+            for (Map.Entry<UUID, TpaRequest> entry : targetRequests.entrySet()) {
+                if (entry.getValue().getRequesterName().equalsIgnoreCase(requesterName)) {
+                    foundRequest = entry.getValue();
+                    foundRequesterUuid = entry.getKey();
+                    break;
+                }
             }
         }
         
@@ -165,12 +194,14 @@ public class TpaManager {
         private final UUID requesterUuid;
         private final String requesterName;
         private final String targetName;
+        private final long timestamp;
         private ScheduledFuture<?> expirationFuture;
 
         public TpaRequest(UUID requesterUuid, String requesterName, String targetName) {
             this.requesterUuid = requesterUuid;
             this.requesterName = requesterName;
             this.targetName = targetName;
+            this.timestamp = System.currentTimeMillis();
         }
 
         public UUID getRequesterUuid() {
@@ -183,6 +214,10 @@ public class TpaManager {
 
         public String getTargetName() {
             return targetName;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
         }
 
         void setExpirationFuture(ScheduledFuture<?> future) {

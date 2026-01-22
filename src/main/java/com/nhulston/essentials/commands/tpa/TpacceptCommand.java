@@ -4,7 +4,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
+import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -19,19 +19,21 @@ import javax.annotation.Nonnull;
 
 /**
  * Command to accept a teleport request from another player.
- * Usage: /tpaccept <player>
+ * Usage: /tpaccept [player]
+ * If no player is specified, accepts the most recent request.
  */
 public class TpacceptCommand extends AbstractPlayerCommand {
     private final TpaManager tpaManager;
     private final TeleportManager teleportManager;
-    private final RequiredArg<String> playerArg;
+    private final OptionalArg<String> playerArg;
 
     public TpacceptCommand(@Nonnull TpaManager tpaManager, @Nonnull TeleportManager teleportManager) {
         super("tpaccept", "Accept a teleport request");
         this.tpaManager = tpaManager;
         this.teleportManager = teleportManager;
-        this.playerArg = withRequiredArg("player", "Player whose request to accept", ArgTypes.STRING);
+        this.playerArg = withOptionalArg("player", "Player whose request to accept (defaults to most recent)", ArgTypes.STRING);
 
+        addAliases("tpyes");
         requirePermission("essentials.tpaccept");
     }
 
@@ -40,10 +42,23 @@ public class TpacceptCommand extends AbstractPlayerCommand {
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         String requesterName = context.get(playerArg);
 
-        TpaManager.TpaRequest request = tpaManager.acceptRequest(playerRef, requesterName);
-        if (request == null) {
-            Msg.fail(context, "No pending teleport request from " + requesterName + ".");
-            return;
+        TpaManager.TpaRequest request;
+        
+        // If no player name specified, accept the most recent request
+        if (requesterName == null) {
+            request = tpaManager.acceptMostRecentRequest(playerRef);
+            if (request == null) {
+                Msg.fail(context, "No pending teleport requests.");
+                return;
+            }
+            requesterName = request.getRequesterName();
+        } else {
+            // Accept request from specific player
+            request = tpaManager.acceptRequest(playerRef, requesterName);
+            if (request == null) {
+                Msg.fail(context, "No pending teleport request from " + requesterName + ".");
+                return;
+            }
         }
 
         // Get the requester's PlayerRef
