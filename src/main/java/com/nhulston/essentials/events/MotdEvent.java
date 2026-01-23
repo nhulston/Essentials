@@ -34,19 +34,15 @@ public class MotdEvent {
             }
 
             Store<EntityStore> store = ref.getStore();
-            PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-            if (playerRef == null) {
-                return;
-            }
-
-            // Schedule on world thread to avoid threading issues
             World world = store.getExternalData().getWorld();
-            if (world == null) {
-                return;
-            }
 
             world.execute(() -> {
                 if (!ref.isValid()) {
+                    return;
+                }
+
+                PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+                if (playerRef == null) {
                     return;
                 }
 
