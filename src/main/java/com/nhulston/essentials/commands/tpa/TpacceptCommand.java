@@ -5,8 +5,6 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
-import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
@@ -32,8 +30,6 @@ public class TpacceptCommand extends AbstractPlayerCommand {
     private final TeleportManager teleportManager;
     private final BackManager backManager;
     private final MessageManager messages;
-    private final OptionalArg<String> playerArg;
-
     public TpacceptCommand(@Nonnull TpaManager tpaManager, @Nonnull TeleportManager teleportManager,
                           @Nonnull BackManager backManager) {
         super("tpaccept", "Accept a teleport request");
@@ -41,7 +37,6 @@ public class TpacceptCommand extends AbstractPlayerCommand {
         this.teleportManager = teleportManager;
         this.backManager = backManager;
         this.messages = Essentials.getInstance().getMessageManager();
-        this.playerArg = withOptionalArg("player", "Player whose request to accept (defaults to most recent)", ArgTypes.STRING);
 
         addAliases("tpyes");
         requirePermission("essentials.tpaccept");
@@ -50,12 +45,15 @@ public class TpacceptCommand extends AbstractPlayerCommand {
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
-        String requesterName = context.get(playerArg);
-
-        TpaManager.TpaRequest request;
+        // Get raw input to check if player specified
+        String rawInput = context.getInputString().trim();
+        String[] parts = rawInput.split("\\s+");
         
-        // If no player name specified, accept the most recent request
-        if (requesterName == null) {
+        TpaManager.TpaRequest request;
+        String requesterName;
+        
+        // If no player specified, accept most recent request
+        if (parts.length == 1) {
             request = tpaManager.acceptMostRecentRequest(playerRef);
             if (request == null) {
                 Msg.send(context, messages.get("commands.tpaccept.no-requests"));
@@ -63,12 +61,22 @@ public class TpacceptCommand extends AbstractPlayerCommand {
             }
             requesterName = request.getRequesterName();
         } else {
-            // Accept request from specific player
-            request = tpaManager.acceptRequest(playerRef, requesterName);
-            if (request == null) {
-                Msg.send(context, messages.get("commands.tpaccept.no-request-from", Map.of("player", requesterName)));
+            // Player name specified - look them up
+            requesterName = parts[1];
+            PlayerRef requester = findPlayer(requesterName);
+            
+            if (requester == null) {
+                Msg.send(context, messages.get("commands.tpaccept.player-offline", Map.of("player", requesterName)));
                 return;
             }
+            
+            // Accept request from specific player
+            request = tpaManager.acceptRequest(playerRef, requester.getUsername());
+            if (request == null) {
+                Msg.send(context, messages.get("commands.tpaccept.no-request-from", Map.of("player", requester.getUsername())));
+                return;
+            }
+            requesterName = requester.getUsername();
         }
 
         // Get the requester's PlayerRef
@@ -113,5 +121,17 @@ public class TpacceptCommand extends AbstractPlayerCommand {
                 messages.get("commands.tpaccept.teleported", Map.of("player", playerRef.getUsername()))
             );
         });
+    }
+    
+    /**
+     * Find a player by name (case-insensitive).
+     */
+    private PlayerRef findPlayer(String name) {
+        for (PlayerRef player : Universe.get().getPlayers()) {
+            if (player.getUsername().equalsIgnoreCase(name)) {
+                return player;
+            }
+        }
+        return null;
     }
 }
