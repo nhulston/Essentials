@@ -12,6 +12,7 @@ import com.nhulston.essentials.util.ConfigManager;
 import com.nhulston.essentials.util.Log;
 import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
+import com.nhulston.essentials.util.SoundUtil;
 import com.nhulston.essentials.util.TeleportUtil;
 
 import javax.annotation.Nonnull;
@@ -28,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TeleportManager {
     private static final String BYPASS_PERMISSION = "essentials.teleport.bypass";
     private static final double CANCEL_DISTANCE = 2.0;
+    private static final String TELEPORT_SOUND = "SFX_Portal_Neutral_Teleport_Local";
 
     private final ConfigManager configManager;
     private final MessageManager messages;
@@ -66,6 +68,7 @@ public class TeleportManager {
             if (error != null) {
                 Msg.send(playerRef, error);
             } else {
+                SoundUtil.playSound(playerRef, TELEPORT_SOUND);
                 if (successMessage != null) {
                     Msg.send(playerRef, successMessage);
                 }
@@ -102,6 +105,7 @@ public class TeleportManager {
         if (delay <= 0 || PermissionsModule.get().hasPermission(playerUuid, BYPASS_PERMISSION)) {
             // Execute immediately
             TeleportUtil.teleportToPlayer(playerRef, targetPlayer);
+            SoundUtil.playSound(playerRef, TELEPORT_SOUND);
             if (successMessage != null) {
                 Msg.send(playerRef, successMessage);
             }
@@ -174,6 +178,7 @@ public class TeleportManager {
                         pending.getTargetPlayerUuid(),
                         () -> {
                             // Success callback
+                            SoundUtil.playSound(pending.getPlayerRef(), TELEPORT_SOUND);
                             if (pending.getSuccessMessage() != null) {
                                 Msg.send(pending.getPlayerRef(), pending.getSuccessMessage());
                             }
@@ -195,6 +200,7 @@ public class TeleportManager {
                     if (error != null) {
                         Msg.send(pending.getPlayerRef(), error);
                     } else {
+                        SoundUtil.playSound(pending.getPlayerRef(), TELEPORT_SOUND);
                         if (pending.getSuccessMessage() != null) {
                             Msg.send(pending.getPlayerRef(), pending.getSuccessMessage());
                         }
