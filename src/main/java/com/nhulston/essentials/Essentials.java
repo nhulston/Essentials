@@ -262,4 +262,12 @@ public class Essentials extends JavaPlugin {
     public MessageManager getMessageManager() {
         return messageManager;
     }
+
+    /**
+     * Gets the storage manager.
+     */
+    @Nonnull
+    public StorageManager getStorageManager() {
+        return storageManager;
+    }
 }

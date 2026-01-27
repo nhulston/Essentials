@@ -84,7 +84,9 @@ public class HomeManager {
         int maxHomes = getMaxHomes(playerUuid);
         if (data.getHome(lowerName) == null && data.getHomeCount() >= maxHomes) {
             if (maxHomes == 0) {
-                return messages.get("validation.home.no-permission");
+                String msg = messages.get("validation.home.no-permission");
+                msg += "\nThis is because you don't have a homes tier permission. Contact the server owner if this is a mistake.";
+                return msg;
             }
             return messages.get("validation.home.max-reached", Map.of("max", String.valueOf(maxHomes)));
         }

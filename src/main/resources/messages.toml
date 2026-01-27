@@ -19,8 +19,14 @@
 [commands.home]
 no-homes = "&cYou don't have any homes set. Use /sethome to set one."
 not-found = "&cHome '{home}' not found."
-list-prefix = "&6Homes"
+list-prefix = "&aHomes&f"
 teleported = "&aTeleported to home '{home}'."
+# Admin commands for viewing/teleporting to other players' homes
+player-not-found = "&cPlayer '{player}' not found or has never joined."
+other-no-homes = "&c{player} doesn't have any homes set."
+other-list-prefix = "&a{player}'s homes&f"
+other-not-found = "&cHome '{home}' not found for {player}."
+other-teleported = "&aTeleported to {player}'s home '{home}'."
 
 [commands.sethome]
 success = "&aSuccessfully set home '{home}'."

@@ -32,6 +32,8 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 |---------------------------------|-----------------------------------|--------------------------------------|
 | <code>/sethome</code>           | Set a home                        | <code>essentials.sethome</code>      |
 | <code>/home</code>              | Teleport to your home             | <code>essentials.home</code>         |
+| <code>/home PLAYER:</code>      | List another player's homes       | <code>essentials.home.others</code>  |
+| <code>/home PLAYER:HOME</code>  | Teleport to another player's home | <code>essentials.home.others</code>  |
 | <code>/delhome</code>           | Delete a home                     | <code>essentials.delhome</code>      |
 | <code>/setwarp</code>           | Set a server warp                 | <code>essentials.setwarp</code>      |
 | <code>/warp</code>              | Teleport to a warp                | <code>essentials.warp</code>         |
@@ -73,6 +75,7 @@ If you have a permissions mod, follow the instructions for that mod.
 |------------------------------------------------|---------------------------------------------------------------------------------------------|
 | <code>essentials.sethome</code>                | Set homes                                                                                   |
 | <code>essentials.home</code>                   | Teleport to homes                                                                           |
+| <code>essentials.home.others</code>            | View and teleport to other players' homes                                                   |
 | <code>essentials.delhome</code>                | Delete homes                                                                                |
 | <code>essentials.homes.TIER</code>             | Home limit for tier (e.g., essentials.homes.vip). Configure tiers in config.toml            |
 | <code>essentials.setwarp</code>                | Create warps                                                                                |
