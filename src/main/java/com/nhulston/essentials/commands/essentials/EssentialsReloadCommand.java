@@ -16,18 +16,18 @@ import java.util.concurrent.CompletableFuture;
  * Can be executed by console or players.
  */
 public class EssentialsReloadCommand extends AbstractCommand {
-    private final MessageManager messages;
 
     public EssentialsReloadCommand() {
         super("reload", "Reload EssentialsCore configuration");
-        this.messages = Essentials.getInstance().getMessageManager();
-
         requirePermission("essentials.reload");
     }
 
     @Override
     protected CompletableFuture<Void> execute(@Nonnull CommandContext context) {
         Essentials.getInstance().reloadConfigs();
+        
+        // Get MessageManager after reload to ensure we have the fresh instance
+        MessageManager messages = Essentials.getInstance().getMessageManager();
         Msg.send(context, messages.get("commands.essentials.reload.success"));
         return CompletableFuture.completedFuture(null);
     }
