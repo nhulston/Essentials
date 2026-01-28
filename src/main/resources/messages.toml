@@ -101,6 +101,12 @@ teleported = "&aRandomly teleported!"
 
 [commands.kit]
 player-error = "&cCould not get player component."
+not-found = "&cKit '{kit}' not found."
+no-permission = "&cYou don't have permission to use this kit."
+cooldown = "&cThis kit is on cooldown. {time} remaining."
+received = "&aYou received the {kit} kit!"
+given = "&aGave {kit} kit to {player}."
+player-not-found = "&cPlayer '{player}' not found or not online."
 
 [commands.kit.create]
 success = "&aKit '{name}' created with {count} items."
