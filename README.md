@@ -47,7 +47,7 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 | <code>/kit</code>                | Open kit selection GUI            | <code>essentials.kit</code>          |
 | <code>/kit create</code>         | Create a kit from your inventory  | <code>essentials.kit.create</code>   |
 | <code>/kit delete</code>         | Delete a kit                      | <code>essentials.kit.delete</code>   |
-| <code>/kit KITNAME PLAYER</code> | Give another player a kit         | <code>essentials.kit.otherq</code>   |
+| <code>/kit KITNAME PLAYER</code> | Give another player a kit         | <code>essentials.kit.other</code>    |
 | <code>/back</code>               | Teleport to your last death       | <code>essentials.back</code>         |
 | <code>/rtp</code>                | Random teleport                   | <code>essentials.rtp</code>          |
 | <code>/list</code>               | List online players               | <code>essentials.list</code>         |
