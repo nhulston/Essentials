@@ -79,23 +79,14 @@ public class StarterKitEvent {
 
         // Phase 2: Give the kit once player is ready (has inventory)
         eventRegistry.registerGlobal(PlayerReadyEvent.class, event -> {
+            // Get ref from event - PlayerReadyEvent is fired on scheduler thread
             Ref<EntityStore> ref = event.getPlayerRef();
             if (!ref.isValid()) {
                 return;
             }
 
             Store<EntityStore> store = ref.getStore();
-            PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-            if (playerRef == null) {
-                return;
-            }
-
-            UUID uuid = playerRef.getUuid();
-            
-            // Check if this player needs a starter kit
-            if (!pendingStarterKits.remove(uuid)) {
-                return;
-            }
+            World world = store.getExternalData().getWorld();
 
             String kitName = configManager.getStarterKitName();
             Kit kit = kitManager.getKit(kitName);
@@ -103,13 +94,22 @@ public class StarterKitEvent {
                 return;
             }
 
-            World world = store.getExternalData().getWorld();
-            if (world == null) {
-                return;
-            }
-
+            // Execute on the player's world thread for thread safety
             world.execute(() -> {
                 if (!ref.isValid()) {
+                    return;
+                }
+
+                // Now we're on the world thread - safe to access components
+                PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+                if (playerRef == null) {
+                    return;
+                }
+
+                UUID uuid = playerRef.getUuid();
+                
+                // Check if this player needs a starter kit
+                if (!pendingStarterKits.remove(uuid)) {
                     return;
                 }
 

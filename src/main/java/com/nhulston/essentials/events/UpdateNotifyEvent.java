@@ -33,25 +33,24 @@ public class UpdateNotifyEvent {
                 return;
             }
 
+            // Get ref from event - PlayerReadyEvent is fired on scheduler thread
             Ref<EntityStore> ref = event.getPlayerRef();
             if (!ref.isValid()) {
                 return;
             }
 
             Store<EntityStore> store = ref.getStore();
-            PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-            if (playerRef == null) {
-                return;
-            }
-
-            // Schedule on world thread to avoid threading issues
             World world = store.getExternalData().getWorld();
-            if (world == null) {
-                return;
-            }
 
+            // Execute on world thread to safely access components
             world.execute(() -> {
                 if (!ref.isValid()) {
+                    return;
+                }
+
+                // Now we're on the world thread - safe to access components
+                PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+                if (playerRef == null) {
                     return;
                 }
 
