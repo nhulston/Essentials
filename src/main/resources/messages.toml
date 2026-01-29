@@ -43,6 +43,7 @@ teleported-other = "&aTeleported {player} to spawn."
 teleported-by = "&eYou have been teleported to spawn by {sender}."
 console-requires-player = "&cConsole must specify a player: /spawn <player>"
 player-not-found = "&cPlayer not found."
+blocked-creative = "&cYou cannot use /spawn while in Creative mode!"
 
 [commands.setspawn]
 success = "&aSpawn set!"

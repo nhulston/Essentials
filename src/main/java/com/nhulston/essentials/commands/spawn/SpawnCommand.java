@@ -17,6 +17,7 @@ import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.SpawnManager;
 import com.nhulston.essentials.managers.TeleportManager;
 import com.nhulston.essentials.models.Spawn;
+import com.nhulston.essentials.util.ConfigManager;
 import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 import com.nhulston.essentials.util.TeleportUtil;
@@ -54,6 +55,48 @@ public class SpawnCommand extends AbstractPlayerCommand {
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+        // Check if creative mode spawn blocking is enabled
+        ConfigManager configManager = Essentials.getInstance().getConfigManager();
+
+        com.nhulston.essentials.util.Log.info("Creative mode spawn block enabled: " +
+            (configManager != null && configManager.isCreativeModeSpawnBlockEnabled()));
+
+        if (configManager != null && configManager.isCreativeModeSpawnBlockEnabled()) {
+            // Check if player has bypass permission
+            boolean hasBypass = com.hypixel.hytale.server.core.permissions.PermissionsModule.get()
+                    .hasPermission(playerRef.getUuid(), "essentials.spawn.creative.bypass");
+
+            com.nhulston.essentials.util.Log.info("Player has bypass permission: " + hasBypass);
+
+            if (!hasBypass) {
+                // Check if we're in a blocked world
+                java.util.List<String> blockedWorlds = configManager.getCreativeModeSpawnBlockWorlds();
+                boolean shouldBlock = blockedWorlds.isEmpty() || blockedWorlds.contains(world.getName());
+
+                com.nhulston.essentials.util.Log.info("Should block in world " + world.getName() + ": " + shouldBlock);
+                com.nhulston.essentials.util.Log.info("Blocked worlds: " + blockedWorlds);
+
+                if (shouldBlock) {
+                    // Check player's game mode
+                    com.hypixel.hytale.server.core.entity.entities.Player player =
+                        store.getComponent(ref, com.hypixel.hytale.server.core.entity.entities.Player.getComponentType());
+
+                    if (player != null) {
+                        com.hypixel.hytale.protocol.GameMode gameMode = player.getGameMode();
+                        com.nhulston.essentials.util.Log.info("Player game mode: " + gameMode);
+
+                        if (gameMode == com.hypixel.hytale.protocol.GameMode.Creative) {
+                            Msg.send(context, messages.get("commands.spawn.blocked-creative"));
+                            com.nhulston.essentials.util.Log.info("BLOCKED spawn command for creative mode player");
+                            return;
+                        }
+                    } else {
+                        com.nhulston.essentials.util.Log.warning("Could not get Player component");
+                    }
+                }
+            }
+        }
+
         Spawn spawn = spawnManager.getSpawn();
 
         if (spawn == null) {

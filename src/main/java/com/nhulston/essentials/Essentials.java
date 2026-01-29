@@ -274,4 +274,12 @@ public class Essentials extends JavaPlugin {
     public StorageManager getStorageManager() {
         return storageManager;
     }
+
+    /**
+     * Gets the config manager.
+     */
+    @Nonnull
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
 }

@@ -189,3 +189,17 @@ kit = "starter"
 # Notify admins (players with * permission) when a plugin update is available
 # Notification is shown once when an admin joins the server
 notify = true
+
+[creative-mode-spawn-block]
+# Block /spawn command when players are in Creative mode
+# This prevents abuse by blocking teleportation to spawn while in creative mode
+# Players with essentials.spawn.creative.bypass permission can bypass this restriction
+enabled = false
+
+# Optional: Specify which worlds this applies to
+# If no worlds are listed, the block applies to ALL worlds
+# Players in creative mode can only use /spawn in worlds NOT listed here
+# Set a world to true to enable blocking in that world
+[creative-mode-spawn-block.worlds]
+# Example: creative = true
+# This would block /spawn in creative mode for the "creative" world only

@@ -97,6 +97,10 @@ public class ConfigManager {
     // Update notification settings
     private volatile boolean updateNotifyEnabled = true;
 
+    // Creative mode spawn block settings
+    private volatile boolean creativeModeSpawnBlockEnabled = false;
+    private volatile List<String> creativeModeSpawnBlockWorlds = List.of();
+
     public ConfigManager(@Nonnull Path dataFolder) {
         this.configPath = dataFolder.resolve("config.toml");
         load();
@@ -223,6 +227,21 @@ public class ConfigManager {
 
             // Update notification config
             updateNotifyEnabled = config.getBoolean("updates.notify", () -> true);
+
+            // Creative mode spawn block config
+            creativeModeSpawnBlockEnabled = config.getBoolean("creative-mode-spawn-block.enabled", () -> false);
+
+            List<String> worlds = new ArrayList<>();
+            TomlTable creativeModeWorldsTable = config.getTable("creative-mode-spawn-block.worlds");
+            if (creativeModeWorldsTable != null) {
+                for (String worldName : creativeModeWorldsTable.keySet()) {
+                    Boolean enabled = creativeModeWorldsTable.getBoolean(worldName);
+                    if (enabled != null && enabled) {
+                        worlds.add(worldName);
+                    }
+                }
+            }
+            creativeModeSpawnBlockWorlds = List.copyOf(worlds);
 
             Log.info("Config loaded!");
         } catch (Exception e) {
@@ -427,5 +446,14 @@ public class ConfigManager {
 
     public boolean isUpdateNotifyEnabled() {
         return updateNotifyEnabled;
+    }
+
+    public boolean isCreativeModeSpawnBlockEnabled() {
+        return creativeModeSpawnBlockEnabled;
+    }
+
+    @Nonnull
+    public List<String> getCreativeModeSpawnBlockWorlds() {
+        return creativeModeSpawnBlockWorlds;
     }
 }
