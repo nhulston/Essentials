@@ -13,7 +13,6 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageEventSystem;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.util.ConfigManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,11 +21,17 @@ import javax.annotation.Nonnull;
 
 public class AfkSystem {
 
+    private static ComponentType<EntityStore, AfkComponent> AFK_COMPONENT;
+
     private final ConfigManager configManager;
     private static final String BYPASS_PERMISSION = "essentials.afk.bypass";
 
     public AfkSystem(final @NotNull ConfigManager configManager) {
         this.configManager = configManager;
+    }
+
+    public static void registerComponents(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
+        AFK_COMPONENT = registry.registerComponent(AfkComponent.class, AfkComponent::new);
     }
 
     public void registerSystems(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
@@ -40,7 +45,7 @@ public class AfkSystem {
             if (!ref.isValid()) return;
 
             Store<EntityStore> store = ref.getStore();
-            store.addComponent(ref, Essentials.getInstance().getAfkComponentType(), new AfkComponent());
+            store.addComponent(ref, AFK_COMPONENT, new AfkComponent());
         });
 
         eventRegistry.<String, PlayerChatEvent>registerAsyncGlobal(PlayerChatEvent.class, future ->
@@ -52,7 +57,7 @@ public class AfkSystem {
                     World world = store.getExternalData().getWorld();
 
                     world.execute(() -> {
-                        AfkComponent afkComponent = store.getComponent(playerRef.getReference(), Essentials.getInstance().getAfkComponentType());
+                        AfkComponent afkComponent = store.getComponent(playerRef.getReference(), AFK_COMPONENT);
                         if (afkComponent != null) {
                             afkComponent.setSecondsSinceLastMoved(0);
                         }
@@ -68,7 +73,7 @@ public class AfkSystem {
             Player player = archetypeChunk.getComponent(index, Player.getComponentType());
             if (player == null) return;
 
-            AfkComponent afk = archetypeChunk.getComponent(index, Essentials.getInstance().getAfkComponentType());
+            AfkComponent afk = archetypeChunk.getComponent(index, AFK_COMPONENT);
             if (afk == null) return;
 
             afk.setSecondsSinceLastMoved(0);
@@ -76,7 +81,7 @@ public class AfkSystem {
 
         @Override
         public @Nullable Query<EntityStore> getQuery() {
-            return Query.and(Essentials.getInstance().getAfkComponentType());
+            return Query.and(AFK_COMPONENT);
         }
     }
 
@@ -99,7 +104,7 @@ public class AfkSystem {
             Player player = archetypeChunk.getComponent(index, Player.getComponentType());
             if (player == null) return;
 
-            AfkComponent afk = archetypeChunk.getComponent(index, Essentials.getInstance().getAfkComponentType());
+            AfkComponent afk = archetypeChunk.getComponent(index, AFK_COMPONENT);
             if (afk == null) return;
 
             TransformComponent transform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
@@ -125,7 +130,7 @@ public class AfkSystem {
         public @Nullable Query<EntityStore> getQuery() {
             return Query.and(TransformComponent.getComponentType(),
                     Player.getComponentType(),
-                    Essentials.getInstance().getAfkComponentType());
+                    AFK_COMPONENT);
         }
     }
 }

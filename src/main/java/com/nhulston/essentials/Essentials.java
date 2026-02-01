@@ -1,14 +1,8 @@
 package com.nhulston.essentials;
 
-import com.hypixel.hytale.component.ComponentType;
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.events.AllWorldsLoadedEvent;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.nhulston.essentials.afk.AfkComponent;
 import com.nhulston.essentials.afk.AfkSystem;
 import com.nhulston.essentials.commands.back.BackCommand;
 import com.nhulston.essentials.commands.essentials.EssentialsCommand;
@@ -84,8 +78,6 @@ public class Essentials extends JavaPlugin {
     private BackManager backManager;
     private VersionChecker versionChecker;
     private MessageManager messageManager;
-
-    private ComponentType<EntityStore, AfkComponent> afkComponent;
 
     public Essentials(@Nonnull JavaPluginInit init) {
         super(init);
@@ -271,18 +263,12 @@ public class Essentials extends JavaPlugin {
     }
 
     private void registerAfkComponent() {
-        this.afkComponent = this.getEntityStoreRegistry()
-                .registerComponent(AfkComponent.class, AfkComponent::new);
-
         if (configManager.isAfkKickEnabled()) {
             AfkSystem afkSystem = new AfkSystem(configManager);
+            AfkSystem.registerComponents(getEntityStoreRegistry());
             afkSystem.registerEvents(getEventRegistry());
             afkSystem.registerSystems(getEntityStoreRegistry());
         }
-    }
-
-    public ComponentType<EntityStore, AfkComponent> getAfkComponentType() {
-        return afkComponent;
     }
 
 
