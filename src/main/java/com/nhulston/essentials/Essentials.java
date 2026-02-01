@@ -275,14 +275,9 @@ public class Essentials extends JavaPlugin {
                 .registerComponent(AfkComponent.class, AfkComponent::new);
 
         if (configManager.isAfkKickEnabled()) {
-            this.getEntityStoreRegistry().registerSystem(new AfkSystem(configManager));
-            this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, event -> {
-                Ref<EntityStore> ref = event.getPlayerRef();
-                if (!ref.isValid()) return;
-
-                Store<EntityStore> store = ref.getStore();
-                store.addComponent(ref, Essentials.getInstance().getAfkComponentType(), new AfkComponent());
-            });
+            AfkSystem afkSystem = new AfkSystem(configManager);
+            afkSystem.registerEvents(getEventRegistry());
+            afkSystem.registerSystems(getEntityStoreRegistry());
         }
     }
 
