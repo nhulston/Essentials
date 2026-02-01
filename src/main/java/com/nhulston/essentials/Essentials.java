@@ -103,14 +103,14 @@ public class Essentials extends JavaPlugin {
         kitManager = new KitManager(getDataDirectory(), storageManager);
         backManager = new BackManager();
         versionChecker = new VersionChecker(VERSION);
-
-        registerAfkComponent();
     }
 
     @Override
     protected void start() {
         registerCommands();
         registerEvents();
+
+        registerAfkSystem();
         
         // Check for updates asynchronously
         versionChecker.checkForUpdatesAsync();
@@ -262,7 +262,7 @@ public class Essentials extends JavaPlugin {
         Log.info("All configurations reloaded.");
     }
 
-    private void registerAfkComponent() {
+    private void registerAfkSystem() {
         if (configManager.isAfkKickEnabled()) {
             AfkSystem afkSystem = new AfkSystem(configManager);
             AfkSystem.registerComponents(getEntityStoreRegistry());

@@ -123,6 +123,17 @@ public class AfkSystem {
 
             if (afk.getSecondsSinceLastMoved() < configManager.getAfkKickTime()) return;
 
+            World world = player.getWorld();
+
+            // Try to kick player from world's thread, otherwise do it directly
+            if (world != null) {
+                world.execute(() -> kickPlayer(playerRef, commandBuffer));
+            } else {
+                kickPlayer(playerRef, commandBuffer);
+            }
+        }
+
+        private void kickPlayer(PlayerRef playerRef, CommandBuffer<EntityStore> commandBuffer) {
             commandBuffer.run(_ -> playerRef.getPacketHandler().disconnect(configManager.getAfkKickMessage()));
         }
 
