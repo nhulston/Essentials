@@ -198,7 +198,7 @@ public class ConfigManager {
             rtpDefaultWorld = defaultWorld != null ? defaultWorld : "default";
 
             afkKickTime = getIntSafe(config, "afk.threshold", 0);
-            afkKickMessage = config.getString("afk.kick-message", () -> "You have been kicked for idling more than {0} seconds!")
+            afkKickMessage = config.getString("afk.kick-message", () -> "You have been kicked for idling more than %period% seconds!")
                     .replace("%period%", String.valueOf(afkKickTime));
 
             // MOTD config
