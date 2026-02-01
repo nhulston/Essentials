@@ -24,7 +24,7 @@ public class AfkSystem {
     private static ComponentType<EntityStore, AfkComponent> AFK_COMPONENT;
 
     private final ConfigManager configManager;
-    private static final String BYPASS_PERMISSION = "essentials.afk.bypass";
+    private static final String BYPASS_PERMISSION = "essentials.afk.cooldown.bypass";
 
     public AfkSystem(final @NotNull ConfigManager configManager) {
         this.configManager = configManager;
