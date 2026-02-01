@@ -1,57 +1,75 @@
 package com.nhulston.essentials.managers;
 
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages death locations for the /back command.
+ * Manages back locations for the /back command.
+ * Tracks both death locations and pre-teleport locations.
  * Stores locations in memory only - not persisted across restarts.
  */
 public class BackManager {
-    private final ConcurrentHashMap<UUID, DeathLocation> deathLocations = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, BackLocation> backLocations = new ConcurrentHashMap<>();
 
     /**
-     * Records a player's death location.
+     * Records a player's back location (death or teleport).
+     * Gets position from EntityStore to avoid stale cache after world changes.
+     * Always overwrites - most recent location is saved.
      */
-    public void setDeathLocation(@Nonnull UUID playerUuid, @Nonnull String worldName,
-                                  double x, double y, double z, float yaw, float pitch) {
-        deathLocations.put(playerUuid, new DeathLocation(worldName, x, y, z, yaw, pitch));
+    public void setBackLocation(@Nonnull Store<EntityStore> store, @Nonnull Ref<EntityStore> ref,
+                                @Nonnull PlayerRef playerRef, @Nonnull World world) {
+        TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
+        if (transform == null) return;
+        
+        Vector3d pos = transform.getPosition();
+        Vector3f rot = transform.getRotation();
+        backLocations.put(playerRef.getUuid(), 
+            new BackLocation(world.getName(), pos.getX(), pos.getY(), pos.getZ(), rot.getY(), rot.getX()));
     }
 
     /**
-     * Gets a player's death location without clearing it.
-     * Returns null if no death location is stored.
+     * Gets a player's back location without clearing it.
+     * Returns null if no location is stored.
      */
     @Nullable
-    public DeathLocation getDeathLocation(@Nonnull UUID playerUuid) {
-        return deathLocations.get(playerUuid);
+    public BackLocation getBackLocation(@Nonnull UUID playerUuid) {
+        return backLocations.get(playerUuid);
     }
 
     /**
-     * Clears a player's death location.
+     * Clears a player's back location.
      */
-    public void clearDeathLocation(@Nonnull UUID playerUuid) {
-        deathLocations.remove(playerUuid);
+    public void clearBackLocation(@Nonnull UUID playerUuid) {
+        backLocations.remove(playerUuid);
     }
 
     /**
-     * Cleans up death location for a player when they disconnect.
+     * Cleans up back location for a player when they disconnect.
      */
     public void onPlayerQuit(@Nonnull UUID playerUuid) {
-        deathLocations.remove(playerUuid);
+        backLocations.remove(playerUuid);
     }
 
     /**
-     * Stores death location data.
+     * Stores back location data.
      */
-    public static class DeathLocation {
+    public static class BackLocation {
         private final String worldName;
         private final double x, y, z;
         private final float yaw, pitch;
 
-        DeathLocation(String worldName, double x, double y, double z, float yaw, float pitch) {
+        BackLocation(String worldName, double x, double y, double z, float yaw, float pitch) {
             this.worldName = worldName;
             this.x = x;
             this.y = y;

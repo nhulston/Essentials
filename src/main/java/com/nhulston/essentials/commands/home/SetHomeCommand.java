@@ -13,17 +13,22 @@ import com.hypixel.hytale.server.core.modules.entity.component.TransformComponen
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.HomeManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 public class SetHomeCommand extends AbstractPlayerCommand {
     private final HomeManager homeManager;
+    private final MessageManager messages;
 
     public SetHomeCommand(@Nonnull HomeManager homeManager) {
         super("sethome", "Set your home location");
         this.homeManager = homeManager;
+        this.messages = Essentials.getInstance().getMessageManager();
 
         requirePermission("essentials.sethome");
         addUsageVariant(new SetHomeNamedCommand(homeManager));
@@ -33,15 +38,16 @@ public class SetHomeCommand extends AbstractPlayerCommand {
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         // /sethome (no args) - use default name
-        doSetHome(context, store, ref, playerRef, world, homeManager.getDefaultHomeName(), homeManager);
+        doSetHome(context, store, ref, playerRef, world, homeManager.getDefaultHomeName(), homeManager, messages);
     }
 
     private static void doSetHome(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                                   @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef,
-                                  @Nonnull World world, @Nonnull String homeName, @Nonnull HomeManager homeManager) {
+                                  @Nonnull World world, @Nonnull String homeName, @Nonnull HomeManager homeManager,
+                                  @Nonnull MessageManager messages) {
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
-            Msg.fail(context, "Could not get your position. Try again.");
+            Msg.send(context, messages.get("commands.sethome.position-error"));
             return;
         }
 
@@ -61,11 +67,11 @@ public class SetHomeCommand extends AbstractPlayerCommand {
         );
 
         if (error != null) {
-            Msg.fail(context, error);
+            Msg.send(context, error);
             return;
         }
 
-        Msg.success(context, String.format("Successfully set home '%s'.", homeName));
+        Msg.send(context, messages.get("commands.sethome.success", Map.of("home", homeName)));
     }
 
     // Inner class for /sethome <name> variant
@@ -83,7 +89,7 @@ public class SetHomeCommand extends AbstractPlayerCommand {
         protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                                @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
             String homeName = context.get(nameArg);
-            doSetHome(context, store, ref, playerRef, world, homeName, homeManager);
+            doSetHome(context, store, ref, playerRef, world, homeName, homeManager, Essentials.getInstance().getMessageManager());
         }
     }
 }

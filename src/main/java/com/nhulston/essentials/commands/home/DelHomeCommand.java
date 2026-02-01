@@ -9,18 +9,23 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.HomeManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 public class DelHomeCommand extends AbstractPlayerCommand {
     private final HomeManager homeManager;
+    private final MessageManager messages;
     private final RequiredArg<String> nameArg;
 
     public DelHomeCommand(@Nonnull HomeManager homeManager) {
         super("delhome", "Delete a home");
         this.homeManager = homeManager;
+        this.messages = Essentials.getInstance().getMessageManager();
         this.nameArg = withRequiredArg("name", "Home name", ArgTypes.STRING);
 
         requirePermission("essentials.delhome");
@@ -34,9 +39,9 @@ public class DelHomeCommand extends AbstractPlayerCommand {
         boolean deleted = homeManager.deleteHome(playerRef.getUuid(), homeName);
 
         if (deleted) {
-            Msg.success(context, "Home '" + homeName + "' deleted.");
+            Msg.send(context, messages.get("commands.delhome.success", Map.of("home", homeName)));
         } else {
-            Msg.fail(context, "Home '" + homeName + "' not found.");
+            Msg.send(context, messages.get("commands.delhome.not-found", Map.of("home", homeName)));
         }
     }
 }

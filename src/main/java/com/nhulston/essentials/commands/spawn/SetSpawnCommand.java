@@ -13,17 +13,21 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.spawn.GlobalSpawnProvider;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.SpawnManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
 
 public class SetSpawnCommand extends AbstractPlayerCommand {
     private final SpawnManager spawnManager;
+    private final MessageManager messages;
 
     public SetSpawnCommand(@Nonnull SpawnManager spawnManager) {
         super("setspawn", "Set the server spawn location");
         this.spawnManager = spawnManager;
+        this.messages = Essentials.getInstance().getMessageManager();
 
         requirePermission("essentials.setspawn");
     }
@@ -33,7 +37,7 @@ public class SetSpawnCommand extends AbstractPlayerCommand {
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
-            Msg.fail(context, "Could not get your position. Try again.");
+            Msg.send(context, messages.get("commands.setspawn.position-error"));
             return;
         }
 
@@ -57,6 +61,6 @@ public class SetSpawnCommand extends AbstractPlayerCommand {
         Transform spawnTransform = new Transform(spawnPosition, spawnRotation);
         world.getWorldConfig().setSpawnProvider(new GlobalSpawnProvider(spawnTransform));
 
-        Msg.success(context, "Spawn set!");
+        Msg.send(context, messages.get("commands.setspawn.success"));
     }
 }

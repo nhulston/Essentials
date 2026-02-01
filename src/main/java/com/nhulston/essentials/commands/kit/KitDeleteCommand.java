@@ -9,10 +9,13 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.KitManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 /**
  * Subcommand to delete a kit.
@@ -20,11 +23,13 @@ import javax.annotation.Nonnull;
  */
 public class KitDeleteCommand extends AbstractPlayerCommand {
     private final KitManager kitManager;
+    private final MessageManager messages;
     private final RequiredArg<String> nameArg;
 
     public KitDeleteCommand(@Nonnull KitManager kitManager) {
         super("delete", "Delete a kit");
         this.kitManager = kitManager;
+        this.messages = Essentials.getInstance().getMessageManager();
 
         requirePermission("essentials.kit.delete");
         this.nameArg = withRequiredArg("name", "Kit name", ArgTypes.STRING);
@@ -37,13 +42,13 @@ public class KitDeleteCommand extends AbstractPlayerCommand {
 
         // Check if kit exists
         if (kitManager.getKit(kitName) == null) {
-            Msg.fail(context, "Kit '" + kitName + "' does not exist.");
+            Msg.send(context, messages.get("commands.kit.delete.not-found", Map.of("name", kitName)));
             return;
         }
 
         // Delete the kit
         kitManager.deleteKit(kitName);
 
-        Msg.success(context, "Kit '" + kitName + "' has been deleted.");
+        Msg.send(context, messages.get("commands.kit.delete.success", Map.of("name", kitName)));
     }
 }

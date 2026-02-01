@@ -6,6 +6,7 @@
 # E.g. essentials.homes.default will give them 3 homes
 # If a player has multiple tier permissions, they get the highest limit
 # Players without any home permission get the "default" tier limit
+# Permissions are CASE SENSITIVE!
 
 [homes.limits]
 default = 3
@@ -16,6 +17,10 @@ admin = 50
 [chat]
 # Enable custom chat formatting
 enabled = true
+
+# For users using LuckPerms, PLEASE READ:
+# In your LuckPerms config, disable `chat-formatter`, and let Essentials handle chat formatting.
+# Join our Discord and see #faq for more information.
 
 # Fallback format for players without a configured rank
 # Placeholders: %player% = player name, %message% = chat message
@@ -42,6 +47,11 @@ disable-building = false
 # Players with essentials.teleport.bypass permission skip the delay.
 delay = 3
 
+[tpa]
+# Time (in seconds) before a TPA request expires
+# After this time, the request is automatically canceled
+expiration = 60
+
 [spawn]
 # This section requires a spawn to be set with /setspawn
 
@@ -53,15 +63,6 @@ every-join = false
 
 # Teleport players to spawn on death
 death-spawn = true
-
-[welcome-broadcast]
-# Broadcast a message to all players when someone joins for the first time
-enabled = true
-
-# Message to broadcast
-# Placeholders: %player% = player name
-# Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)
-message = "&e%player% &6has joined the server for the first time!"
 
 [spawn-protection]
 # This section requires a spawn to be set with /setspawn
@@ -147,3 +148,51 @@ prefix = "&0[&7Broadcast&0] &f"
 # Cooldown in seconds between /repair uses (0 to disable)
 # Default: 43200 (12 hours)
 cooldown = 43200
+
+[rules]
+# Server rules displayed with /rules command
+# Placeholders: %player% = player name
+# Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)
+# Use triple quotes for multi-line messages
+message = """
+&6=== Server Rules ===
+&e1. &fBe respectful to all players
+&e2. &fNo griefing or stealing
+&e3. &fNo hacking or cheating
+&e4. &fHave fun!
+"""
+
+[join-leave-messages]
+# Broadcast messages when players join or leave the server
+# You can make any text have multiple lines by doing something like this:
+# join-message = """
+# &aLine 1
+# &bLine 2
+# """
+# See the MOTD section for an example.
+
+# Join messages
+join-enabled = true
+join-message = "&8[&a+&8] &7%player%"
+first-join-message = "&e%player% &6joined the game for the first time!"
+
+# Leave messages
+leave-enabled = true
+leave-message = "&8[&c-&8] &7%player%"
+
+# Placeholders: %player% = player name
+# Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)
+
+[starter-kit]
+# Give new players a kit when they first join
+enabled = true
+
+# Name of the kit to give (must match a kit name in kits.toml exactly)
+# This kit will not appear in the /kit menu and cannot be obtained any other way
+# The player must have the essentials.kit.<kitname> permission to receive the starter kit
+kit = "starter"
+
+[updates]
+# Notify admins (players with * permission) when a plugin update is available
+# Notification is shown once when an admin joins the server
+notify = true

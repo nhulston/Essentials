@@ -7,10 +7,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.modules.entity.damage.DeathComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -64,28 +61,10 @@ public class DeathLocationEvent {
                 return;
             }
 
-            TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
-            if (transform == null) {
-                return;
-            }
-
-            Vector3d position = transform.getPosition();
-            Vector3f rotation = transform.getRotation();
-            
-            // Get the world name
             EntityStore entityStore = store.getExternalData();
             World world = entityStore.getWorld();
-            String worldName = world.getName();
 
-            backManager.setDeathLocation(
-                playerRef.getUuid(),
-                worldName,
-                position.getX(),
-                position.getY(),
-                position.getZ(),
-                rotation.getY(), // yaw
-                rotation.getX()  // pitch
-            );
+            backManager.setBackLocation(store, ref, playerRef, world);
         }
 
         @Override

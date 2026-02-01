@@ -9,20 +9,25 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 import com.nhulston.essentials.util.TeleportUtil;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 /**
  * Command to teleport another player to yourself.
  * Usage: /tphere <player>
  */
 public class TphereCommand extends AbstractPlayerCommand {
+    private final MessageManager messages;
     private final RequiredArg<PlayerRef> targetArg;
 
     public TphereCommand() {
         super("tphere", "Teleport a player to you");
+        this.messages = Essentials.getInstance().getMessageManager();
         this.targetArg = withRequiredArg("player", "Player to teleport", ArgTypes.PLAYER_REF);
         requirePermission("essentials.tphere");
     }
@@ -33,19 +38,25 @@ public class TphereCommand extends AbstractPlayerCommand {
         PlayerRef target = context.get(targetArg);
 
         if (target == null) {
-            Msg.fail(context, "Player not found.");
+            Msg.send(context, messages.get("commands.tphere.player-not-found"));
+            return;
+        }
+
+        Ref<EntityStore> targetRef = target.getReference();
+        if (targetRef == null || !targetRef.isValid()) {
+            Msg.send(context, messages.get("commands.tphere.player-not-found"));
             return;
         }
 
         if (target.getUuid().equals(playerRef.getUuid())) {
-            Msg.fail(context, "You cannot teleport yourself to yourself.");
+            Msg.send(context, messages.get("commands.tphere.cannot-self"));
             return;
         }
 
         // Teleport target to the command sender
         TeleportUtil.teleportToPlayer(target, playerRef);
 
-        Msg.success(context, "Teleported " + target.getUsername() + " to you.");
-        Msg.info(target, "You have been teleported to " + playerRef.getUsername() + ".");
+        Msg.send(context, messages.get("commands.tphere.success", Map.of("player", target.getUsername())));
+        Msg.send(target, messages.get("commands.tphere.teleported", Map.of("player", playerRef.getUsername())));
     }
 }

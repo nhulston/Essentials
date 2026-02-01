@@ -15,6 +15,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.util.ColorUtil;
 import com.nhulston.essentials.util.ConfigManager;
 import com.nhulston.essentials.util.Log;
+import com.nhulston.essentials.util.MessageManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -27,13 +28,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SleepPercentageEvent {
     private final ConfigManager configManager;
+    private final MessageManager messages;
 
-    public SleepPercentageEvent(@Nonnull ConfigManager configManager) {
+    public SleepPercentageEvent(@Nonnull ConfigManager configManager, @Nonnull MessageManager messages) {
         this.configManager = configManager;
+        this.messages = messages;
     }
 
     public void register(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
-        registry.registerSystem(new SleepTrackingSystem(configManager));
+        registry.registerSystem(new SleepTrackingSystem(configManager, messages));
     }
 
     /**
@@ -41,15 +44,17 @@ public class SleepPercentageEvent {
      */
     private static class SleepTrackingSystem extends RefChangeSystem<EntityStore, PlayerSomnolence> {
         private static final double MORNING_TIME = 0.25; // ~5:00 AM
-        private static final double NIGHT_START = 0.875; // 9:00 PM
+        private static final double NIGHT_START = 0.8125; // 7:30 PM
         private static final double NIGHT_END = 0.25; // ~6:00 AM
 
         private final ConfigManager config;
+        private final MessageManager messages;
         // Track sleeping players per world
         private final Map<String, AtomicInteger> sleepingCountPerWorld = new ConcurrentHashMap<>();
 
-        SleepTrackingSystem(ConfigManager config) {
+        SleepTrackingSystem(ConfigManager config, MessageManager messages) {
             this.config = config;
+            this.messages = messages;
         }
 
         @Override
@@ -171,7 +176,10 @@ public class SleepPercentageEvent {
             }
 
             // Broadcast message
-            world.sendMessage(ColorUtil.colorize("&eGoodnight! Skipping to morning..."));
+            String message = messages.get("sleep.skipping");
+            if (!message.isEmpty()) {
+                world.sendMessage(ColorUtil.colorize(message));
+            }
             Log.info("Night skipped in world '" + worldName + "' due to sleep percentage.");
         }
     }

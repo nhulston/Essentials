@@ -8,6 +8,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
@@ -19,9 +21,11 @@ import java.util.UUID;
  * Aliases: /reply
  */
 public class ReplyCommand extends AbstractPlayerCommand {
+    private final MessageManager messages;
 
     public ReplyCommand() {
         super("r", "Reply to your last message");
+        this.messages = Essentials.getInstance().getMessageManager();
         
         // Allow extra arguments since we parse them manually
         setAllowsExtraArguments(true);
@@ -38,7 +42,7 @@ public class ReplyCommand extends AbstractPlayerCommand {
         String[] parts = rawInput.split("\\s+", 2); // Split into [command, message]
         
         if (parts.length < 2) {
-            Msg.fail(context, "Usage: /r <message>");
+            Msg.send(context, messages.get("commands.reply.usage"));
             return;
         }
         
@@ -47,17 +51,17 @@ public class ReplyCommand extends AbstractPlayerCommand {
         // Get last message partner
         UUID targetUuid = MsgCommand.getLastMessagePartner(playerRef.getUuid());
         if (targetUuid == null) {
-            Msg.fail(context, "You have no one to reply to.");
+            Msg.send(context, messages.get("commands.reply.no-one"));
             return;
         }
 
         // Find target player
         PlayerRef target = Universe.get().getPlayer(targetUuid);
         if (target == null) {
-            Msg.fail(context, "That player is no longer online.");
+            Msg.send(context, messages.get("commands.reply.player-offline"));
             return;
         }
 
-        MsgCommand.sendMessage(playerRef, target, message, context);
+        MsgCommand.sendMessage(playerRef, target, message, context, messages);
     }
 }

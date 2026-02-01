@@ -1,6 +1,8 @@
 package com.nhulston.essentials.managers;
 
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.models.Warp;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.StorageManager;
 
 import javax.annotation.Nonnull;
@@ -13,21 +15,23 @@ public class WarpManager {
     private static final int MAX_NAME_LENGTH = 16;
 
     private final StorageManager storageManager;
+    private final MessageManager messages;
 
     public WarpManager(@Nonnull StorageManager storageManager) {
         this.storageManager = storageManager;
+        this.messages = Essentials.getInstance().getMessageManager();
     }
 
     @Nullable
     public String validateWarpName(@Nonnull String name) {
         if (name.isEmpty()) {
-            return "Warp name cannot be empty.";
+            return messages.get("validation.warp.name-empty");
         }
         if (name.length() > MAX_NAME_LENGTH) {
-            return "Warp name cannot be longer than " + MAX_NAME_LENGTH + " characters.";
+            return messages.get("validation.warp.name-too-long", Map.of("max", String.valueOf(MAX_NAME_LENGTH)));
         }
         if (!VALID_NAME_PATTERN.matcher(name).matches()) {
-            return "Warp name must be alphanumeric only.";
+            return messages.get("validation.warp.name-invalid");
         }
         return null;
     }

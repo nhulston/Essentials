@@ -2,7 +2,7 @@ $C = "../Common.ui";
 
 $C.@PageOverlay {
   $C.@Container {
-    Anchor: (Width: 450, Height: 400);
+    Anchor: (Width: 650, Height: 500);
 
     #Title {
       Group {
@@ -13,19 +13,19 @@ $C.@PageOverlay {
     }
 
     #Content {
-      LayoutMode: Left;
+      LayoutMode: Top;
 
       Group #Main {
         LayoutMode: Top;
+        FlexWeight: 1;
 
-        Group #KitList {
-          Anchor: (Width: 430);
+        Group #KitGrid {
           FlexWeight: 1;
           LayoutMode: TopScrolling;
-          Padding: (Left: 4);
+          Padding: (Full: 8);
           ScrollbarStyle: $C.@DefaultScrollbarStyle;
 
-          Group #KitCards {
+          Group #KitRows {
             LayoutMode: Top;
           }
         }

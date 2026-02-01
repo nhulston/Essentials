@@ -10,15 +10,19 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.TeleportManager;
 import com.nhulston.essentials.models.PlayerData;
 import com.nhulston.essentials.util.ConfigManager;
 import com.nhulston.essentials.util.CooldownUtil;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 import com.nhulston.essentials.util.StorageManager;
 import com.nhulston.essentials.util.TeleportUtil;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,13 +38,17 @@ public class RtpCommand extends AbstractPlayerCommand {
     private final ConfigManager configManager;
     private final StorageManager storageManager;
     private final TeleportManager teleportManager;
+    private final BackManager backManager;
+    private final MessageManager messages;
 
     public RtpCommand(@Nonnull ConfigManager configManager, @Nonnull StorageManager storageManager,
-                      @Nonnull TeleportManager teleportManager) {
+                      @Nonnull TeleportManager teleportManager, @Nonnull BackManager backManager) {
         super("rtp", "Randomly teleport to a location");
         this.configManager = configManager;
         this.storageManager = storageManager;
         this.teleportManager = teleportManager;
+        this.backManager = backManager;
+        this.messages = Essentials.getInstance().getMessageManager();
 
         requirePermission("essentials.rtp");
     }
@@ -60,7 +68,7 @@ public class RtpCommand extends AbstractPlayerCommand {
                 long elapsed = (System.currentTimeMillis() - lastUse) / 1000;
                 long remaining = cooldownSeconds - elapsed;
                 if (remaining > 0) {
-                    Msg.fail(context, "RTP is on cooldown. " + CooldownUtil.formatCooldown(remaining) + " remaining.");
+                    Msg.send(context, messages.get("commands.rtp.cooldown", Map.of("time", CooldownUtil.formatCooldown(remaining))));
                     return;
                 }
             }
@@ -80,7 +88,7 @@ public class RtpCommand extends AbstractPlayerCommand {
             radius = configManager.getRtpRadius(rtpWorldName);
             
             if (radius == null) {
-                Msg.fail(context, "RTP is not enabled in this world.");
+                Msg.send(context, messages.get("commands.rtp.not-enabled"));
                 return;
             }
         }
@@ -88,21 +96,27 @@ public class RtpCommand extends AbstractPlayerCommand {
         // Verify the world exists
         World rtpWorld = Universe.get().getWorld(rtpWorldName);
         if (rtpWorld == null) {
-            Msg.fail(context, "RTP world '" + rtpWorldName + "' is not loaded.");
+            Msg.send(context, messages.get("commands.rtp.world-not-loaded", Map.of("world", rtpWorldName)));
             return;
         }
 
         boolean isCrossWorld = !rtpWorldName.equals(currentWorldName);
         
+        backManager.setBackLocation(store, ref, playerRef, world);
+        Vector3d startPos = TeleportUtil.getStartPosition(store, ref);
+        if (startPos == null) {
+            Msg.send(context, messages.get("errors.generic"));
+            return;
+        }
+
         if (isCrossWorld) {
             // Cross-world RTP - use async chunk loading
-            // Capture start position now, on the correct thread
-            Vector3d startPosition = playerRef.getTransform().getPosition().clone();
+            final Vector3d startPosition = startPos.clone();
 
             findSafeLocationAsync(rtpWorld, radius, 0)
                 .thenAccept(result -> {
                     if (result == null) {
-                        Msg.fail(playerRef, "Could not find a safe location after " + MAX_ATTEMPTS + " attempts. Try again.");
+                        Msg.send(playerRef, messages.get("commands.rtp.no-safe-location", Map.of("attempts", String.valueOf(MAX_ATTEMPTS))));
                         return;
                     }
                     
@@ -112,7 +126,7 @@ public class RtpCommand extends AbstractPlayerCommand {
                             playerRef, ref, store, startPosition,
                                 rtpWorldName, result.x, result.y, result.z,
                             0.0f, 0.0f,
-                            "Randomly teleported!",
+                            messages.get("commands.rtp.teleported"),
                             () -> {
                                 data.setLastRtpTime(System.currentTimeMillis());
                                 storageManager.savePlayerData(playerUuid);
@@ -121,7 +135,7 @@ public class RtpCommand extends AbstractPlayerCommand {
                     });
                 })
                 .exceptionally(ex -> {
-                    Msg.fail(playerRef, "RTP failed. Please try again.");
+                    Msg.send(playerRef, messages.get("commands.rtp.failed"));
                     return null;
                 });
         } else {
@@ -145,13 +159,17 @@ public class RtpCommand extends AbstractPlayerCommand {
             Double safeY = TeleportUtil.findSafeRtpY(rtpWorld, x, z);
             
             if (safeY != null) {
-                Vector3d startPosition = playerRef.getTransform().getPosition();
+                Vector3d startPosition = TeleportUtil.getStartPosition(store, ref);
+                if (startPosition == null) {
+                    Msg.send(playerRef, messages.get("errors.generic"));
+                    return;
+                }
 
                 teleportManager.queueTeleport(
                     playerRef, ref, store, startPosition,
                     rtpWorldName, x, safeY, z,
                     0.0f, 0.0f,
-                    "Randomly teleported!",
+                    messages.get("commands.rtp.teleported"),
                     () -> {
                         data.setLastRtpTime(System.currentTimeMillis());
                         storageManager.savePlayerData(playerUuid);
@@ -161,7 +179,7 @@ public class RtpCommand extends AbstractPlayerCommand {
             }
         }
 
-        Msg.fail(playerRef, "Could not find a safe location after " + MAX_ATTEMPTS + " attempts. Try again.");
+        Msg.send(playerRef, messages.get("commands.rtp.no-safe-location", Map.of("attempts", String.valueOf(MAX_ATTEMPTS))));
     }
 
     /**

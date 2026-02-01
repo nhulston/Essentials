@@ -9,18 +9,23 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.WarpManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 public class DelWarpCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
+    private final MessageManager messages;
     private final RequiredArg<String> nameArg;
 
     public DelWarpCommand(@Nonnull WarpManager warpManager) {
         super("delwarp", "Delete a warp");
         this.warpManager = warpManager;
+        this.messages = Essentials.getInstance().getMessageManager();
         this.nameArg = withRequiredArg("name", "Warp name", ArgTypes.STRING);
 
         requirePermission("essentials.delwarp");
@@ -34,9 +39,9 @@ public class DelWarpCommand extends AbstractPlayerCommand {
         boolean deleted = warpManager.deleteWarp(warpName);
 
         if (deleted) {
-            Msg.success(context, "Warp '" + warpName + "' deleted.");
+            Msg.send(context, messages.get("commands.delwarp.success", Map.of("warp", warpName)));
         } else {
-            Msg.fail(context, "Warp '" + warpName + "' not found.");
+            Msg.send(context, messages.get("commands.delwarp.not-found", Map.of("warp", warpName)));
         }
     }
 }

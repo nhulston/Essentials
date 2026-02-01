@@ -12,14 +12,17 @@ import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.models.PlayerData;
 import com.nhulston.essentials.util.ConfigManager;
 import com.nhulston.essentials.util.CooldownUtil;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 import com.nhulston.essentials.util.SoundUtil;
 import com.nhulston.essentials.util.StorageManager;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -32,11 +35,13 @@ public class RepairCommand extends AbstractPlayerCommand {
 
     private final ConfigManager configManager;
     private final StorageManager storageManager;
+    private final MessageManager messages;
 
     public RepairCommand(@Nonnull ConfigManager configManager, @Nonnull StorageManager storageManager) {
         super("repair", "Repair the item in your hand");
         this.configManager = configManager;
         this.storageManager = storageManager;
+        this.messages = Essentials.getInstance().getMessageManager();
 
         addAliases("fix");
         requirePermission("essentials.repair");
@@ -57,7 +62,7 @@ public class RepairCommand extends AbstractPlayerCommand {
                 long elapsed = (System.currentTimeMillis() - lastUse) / 1000;
                 long remaining = cooldownSeconds - elapsed;
                 if (remaining > 0) {
-                    Msg.fail(context, "Repair is on cooldown. " + CooldownUtil.formatCooldown(remaining) + " remaining.");
+                    Msg.send(context, messages.get("commands.repair.cooldown", Map.of("time", CooldownUtil.formatCooldown(remaining))));
                     return;
                 }
             }
@@ -65,31 +70,31 @@ public class RepairCommand extends AbstractPlayerCommand {
 
         Player player = store.getComponent(ref, Player.getComponentType());
         if (player == null) {
-            Msg.fail(context, "Could not access player data.");
+            Msg.send(context, messages.get("commands.repair.player-data-error"));
             return;
         }
 
         Inventory inventory = player.getInventory();
         if (inventory == null) {
-            Msg.fail(context, "Could not access your inventory.");
+            Msg.send(context, messages.get("commands.repair.inventory-error"));
             return;
         }
 
         ItemStack heldItem = inventory.getItemInHand();
         if (heldItem == null || heldItem.isEmpty()) {
-            Msg.fail(context, "You are not holding any item.");
+            Msg.send(context, messages.get("commands.repair.no-item"));
             return;
         }
 
         double maxDurability = heldItem.getMaxDurability();
         if (maxDurability <= 0) {
-            Msg.fail(context, "This item cannot be repaired.");
+            Msg.send(context, messages.get("commands.repair.cannot-repair"));
             return;
         }
 
         double currentDurability = heldItem.getDurability();
         if (currentDurability >= maxDurability) {
-            Msg.fail(context, "This item is already at full durability.");
+            Msg.send(context, messages.get("commands.repair.already-full"));
             return;
         }
 
@@ -107,6 +112,6 @@ public class RepairCommand extends AbstractPlayerCommand {
         player.sendInventory();
 
         SoundUtil.playSound(playerRef, "SFX_Item_Repair");
-        Msg.success(context, "Item repaired.");
+        Msg.send(context, messages.get("commands.repair.success"));
     }
 }

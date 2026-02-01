@@ -37,10 +37,17 @@ public class SpawnProtectionManager {
 
     /**
      * Checks if a block position is within the protected spawn area.
+     * @param worldName The world name to check against
+     * @param blockPos The block position to check
      */
-    public boolean isInProtectedArea(@Nonnull Vector3i blockPos) {
+    public boolean isInProtectedArea(@Nonnull String worldName, @Nonnull Vector3i blockPos) {
         Spawn spawn = storageManager.getSpawn();
         if (spawn == null) {
+            return false;
+        }
+
+        // Check if we're in the correct world
+        if (!spawn.getWorld().equals(worldName)) {
             return false;
         }
 
@@ -59,10 +66,17 @@ public class SpawnProtectionManager {
 
     /**
      * Checks if an entity position is within the protected spawn area.
+     * @param worldName The world name to check against
+     * @param entityPos The entity position to check
      */
-    public boolean isInProtectedArea(@Nonnull Vector3d entityPos) {
+    public boolean isInProtectedArea(@Nonnull String worldName, @Nonnull Vector3d entityPos) {
         Spawn spawn = storageManager.getSpawn();
         if (spawn == null) {
+            return false;
+        }
+
+        // Check if we're in the correct world
+        if (!spawn.getWorld().equals(worldName)) {
             return false;
         }
 

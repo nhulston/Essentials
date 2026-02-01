@@ -9,6 +9,8 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntitySta
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
@@ -18,9 +20,11 @@ import javax.annotation.Nonnull;
  * Usage: /heal
  */
 public class HealCommand extends AbstractPlayerCommand {
+    private final MessageManager messages;
 
     public HealCommand() {
         super("heal", "Restore your health to full");
+        this.messages = Essentials.getInstance().getMessageManager();
         requirePermission("essentials.heal");
     }
 
@@ -29,13 +33,13 @@ public class HealCommand extends AbstractPlayerCommand {
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
         if (statMap == null) {
-            Msg.fail(context, "Could not access your stats.");
+            Msg.send(context, messages.get("commands.heal.stats-error"));
             return;
         }
 
         int healthStatIndex = DefaultEntityStatTypes.getHealth();
         statMap.maximizeStatValue(healthStatIndex);
         
-        Msg.success(context, "You have been healed.");
+        Msg.send(context, messages.get("commands.heal.success"));
     }
 }

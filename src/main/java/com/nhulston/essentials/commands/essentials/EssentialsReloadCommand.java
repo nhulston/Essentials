@@ -1,34 +1,34 @@
 package com.nhulston.essentials.commands.essentials;
 
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
-import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Subcommand to reload EssentialsCore configuration.
  * Usage: /essentials reload
  * Requires: essentials.reload permission
+ * Can be executed by console or players.
  */
-public class EssentialsReloadCommand extends AbstractPlayerCommand {
+public class EssentialsReloadCommand extends AbstractCommand {
 
     public EssentialsReloadCommand() {
         super("reload", "Reload EssentialsCore configuration");
-
         requirePermission("essentials.reload");
     }
 
     @Override
-    protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
-                           @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+    protected CompletableFuture<Void> execute(@Nonnull CommandContext context) {
         Essentials.getInstance().reloadConfigs();
-        Msg.success(context, "Configuration reloaded.");
+        
+        // Get MessageManager after reload to ensure we have the fresh instance
+        MessageManager messages = Essentials.getInstance().getMessageManager();
+        Msg.send(context, messages.get("commands.essentials.reload.success"));
+        return CompletableFuture.completedFuture(null);
     }
 }

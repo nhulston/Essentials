@@ -13,18 +13,23 @@ import com.hypixel.hytale.server.core.modules.entity.component.TransformComponen
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.WarpManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 public class SetWarpCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
+    private final MessageManager messages;
     private final RequiredArg<String> nameArg;
 
     public SetWarpCommand(@Nonnull WarpManager warpManager) {
         super("setwarp", "Set a warp location");
         this.warpManager = warpManager;
+        this.messages = Essentials.getInstance().getMessageManager();
         this.nameArg = withRequiredArg("name", "Warp name", ArgTypes.STRING);
 
         requirePermission("essentials.setwarp");
@@ -37,7 +42,7 @@ public class SetWarpCommand extends AbstractPlayerCommand {
 
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
-            Msg.fail(context, "Could not get your position. Try again.");
+            Msg.send(context, messages.get("commands.setwarp.position-error"));
             return;
         }
 
@@ -56,10 +61,10 @@ public class SetWarpCommand extends AbstractPlayerCommand {
         );
 
         if (error != null) {
-            Msg.fail(context, error);
+            Msg.send(context, error);
             return;
         }
 
-        Msg.success(context, String.format("Warp '%s' set in world %s", warpName, world.getName()));
+        Msg.send(context, messages.get("commands.setwarp.success", Map.of("warp", warpName, "world", world.getName())));
     }
 }

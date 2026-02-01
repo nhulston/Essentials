@@ -1,5 +1,6 @@
 package com.nhulston.essentials.util;
 
+import com.hypixel.hytale.protocol.MaybeBool;
 import com.hypixel.hytale.server.core.Message;
 
 import javax.annotation.Nonnull;
@@ -9,11 +10,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility for parsing color codes in messages.
+ * Utility for parsing color and formatting codes in messages.
+ * Supports:
+ * - Standard color codes: &0-&f
+ * - Hex color codes: &#RRGGBB
+ * - Bold: &l
+ * - Reset: &r
  */
 public final class ColorUtil {
-    private static final Pattern COLOR_CODE_PATTERN = Pattern.compile("&([0-9a-fA-F])");
-    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("&#([0-9a-fA-Fa-f]{6})");
+    // Matches all formatting tokens: &#RRGGBB, &0-&f, &l, &r
+    private static final Pattern TOKEN_PATTERN = Pattern.compile(
+            "&#([0-9a-fA-F]{6})|&([0-9a-fA-FlLrR])"
+    );
 
     // Standard Minecraft color codes mapped to hex
     private static final String[] COLOR_MAP = {
@@ -35,53 +43,73 @@ public final class ColorUtil {
             "#FFFFFF"  // &f - White
     };
 
+    private static final String DEFAULT_COLOR = "#FFFFFF";
+
     private ColorUtil() {}
 
     /**
-     * Parses color codes (&0-&f and &#RRGGBB) and returns a colored Message.
+     * Tracks the current text style state during parsing.
+     */
+    private static class TextStyle {
+        String color = DEFAULT_COLOR;
+        boolean bold = false;
+
+        void reset() {
+            color = DEFAULT_COLOR;
+            bold = false;
+        }
+    }
+
+    /**
+     * Parses color and formatting codes and returns a styled Message.
+     * Supports: &0-&f (colors), &#RRGGBB (hex colors), &l (bold), &r (reset)
      */
     @Nonnull
     public static Message colorize(@Nonnull String text) {
-        // First, convert all color codes to a normalized format
-        String normalized = text;
-
-        // Replace standard color codes (&0-&f) with hex equivalents
-        Matcher colorMatcher = COLOR_CODE_PATTERN.matcher(normalized);
-        StringBuilder sb = new StringBuilder();
-        while (colorMatcher.find()) {
-            String code = colorMatcher.group(1).toLowerCase();
-            int index = Character.digit(code.charAt(0), 16);
-            String hex = COLOR_MAP[index];
-            colorMatcher.appendReplacement(sb, Matcher.quoteReplacement("&#" + hex.substring(1)));
-        }
-        colorMatcher.appendTail(sb);
-        normalized = sb.toString();
-
-        // Now parse the string with hex color codes
         List<Message> parts = new ArrayList<>();
-        Matcher hexMatcher = HEX_COLOR_PATTERN.matcher(normalized);
+        TextStyle currentStyle = new TextStyle();
+        Matcher matcher = TOKEN_PATTERN.matcher(text);
         int lastEnd = 0;
-        String currentColor = "#FFFFFF";
 
-        while (hexMatcher.find()) {
-            // Add text before this color code
-            if (hexMatcher.start() > lastEnd) {
-                String segment = normalized.substring(lastEnd, hexMatcher.start());
+        while (matcher.find()) {
+            // Add text before this token with current style
+            if (matcher.start() > lastEnd) {
+                String segment = text.substring(lastEnd, matcher.start());
                 if (!segment.isEmpty()) {
-                    parts.add(Message.raw(segment).color(currentColor));
+                    parts.add(createStyledMessage(segment, currentStyle));
                 }
             }
 
-            // Update current color
-            currentColor = "#" + hexMatcher.group(1).toUpperCase();
-            lastEnd = hexMatcher.end();
+            // Process the token
+            String hexColor = matcher.group(1);  // &#RRGGBB capture
+            String code = matcher.group(2);       // &X capture
+
+            if (hexColor != null) {
+                // Hex color code: &#RRGGBB
+                currentStyle.color = "#" + hexColor.toUpperCase();
+            } else if (code != null) {
+                char c = code.toLowerCase().charAt(0);
+                if (c == 'l') {
+                    // Bold
+                    currentStyle.bold = true;
+                } else if (c == 'r') {
+                    // Reset all formatting
+                    currentStyle.reset();
+                } else {
+                    // Standard color code: &0-&f
+                    int index = Character.digit(c, 16);
+                    currentStyle.color = COLOR_MAP[index];
+                }
+            }
+
+            lastEnd = matcher.end();
         }
 
         // Add remaining text
-        if (lastEnd < normalized.length()) {
-            String segment = normalized.substring(lastEnd);
+        if (lastEnd < text.length()) {
+            String segment = text.substring(lastEnd);
             if (!segment.isEmpty()) {
-                parts.add(Message.raw(segment).color(currentColor));
+                parts.add(createStyledMessage(segment, currentStyle));
             }
         }
 
@@ -92,5 +120,18 @@ public final class ColorUtil {
         } else {
             return Message.join(parts.toArray(new Message[0]));
         }
+    }
+
+    /**
+     * Creates a Message with the specified style applied.
+     */
+    private static Message createStyledMessage(String text, TextStyle style) {
+        Message message = Message.raw(text).color(style.color);
+
+        if (style.bold) {
+            message.getFormattedMessage().bold = MaybeBool.True;
+        }
+
+        return message;
     }
 }

@@ -20,6 +20,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.tomlj:tomlj:1.1.1")
     implementation("org.jetbrains:annotations:24.1.0")
+    implementation("org.ow2.asm:asm:9.7")
 
     // Test dependencies
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
@@ -54,15 +55,17 @@ tasks {
     shadowJar {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("")
-        destinationDirectory.set(file("/mnt/c/Users/Nicholas/Development/hytale-server/mods"))
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
 
         // Relocate dependencies to avoid conflicts
         relocate("com.google.gson", "com.nhulston.libs.gson")
         relocate("org.tomlj", "com.nhulston.libs.tomlj")
         relocate("org.antlr", "com.nhulston.libs.antlr")
+        relocate("com.google.errorprone", "com.nhulston.libs.errorprone")
+        relocate("io.netty", "com.nhulston.libs.netty")
 
-        // Minimize JAR size (removes unused classes)
-        minimize()
+        // Merge service files properly
+        mergeServiceFiles()
     }
 
     // Configure tests

@@ -1,5 +1,13 @@
 package com.nhulston.essentials.managers;
 
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.entity.ItemUtils;
+import com.hypixel.hytale.server.core.inventory.Inventory;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
+import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.models.Kit;
 import com.nhulston.essentials.models.KitItem;
 import com.nhulston.essentials.models.PlayerData;
@@ -275,6 +283,67 @@ public class KitManager {
         PlayerData data = storageManager.getPlayerData(playerUuid);
         data.setKitCooldown(kitId.toLowerCase(), System.currentTimeMillis());
         storageManager.savePlayerData(playerUuid);
+    }
+
+    /**
+     * Applies a kit to the player's inventory. Overflow items are dropped on the ground.
+     */
+    public static void applyKit(@Nonnull Kit kit, @Nonnull Inventory inventory,
+                                @Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store) {
+        if (kit.isReplaceMode()) {
+            inventory.clear();
+        }
+
+        for (KitItem kitItem : kit.getItems()) {
+            try {
+                ItemStack itemStack = new ItemStack(kitItem.itemId(), kitItem.quantity());
+                ItemStack remainder = addItemWithOverflow(inventory, kitItem, itemStack);
+
+                if (remainder != null && !remainder.isEmpty()) {
+                    ItemUtils.dropItem(ref, remainder, store);
+                }
+            } catch (Exception e) {
+                Log.warning("Kit '" + kit.getId() + "' contains invalid item: " + kitItem.itemId() + " - " + e.getMessage());
+            }
+        }
+    }
+
+    @Nullable
+    private static ItemStack addItemWithOverflow(@Nonnull Inventory inventory, @Nonnull KitItem kitItem, @Nonnull ItemStack itemStack) {
+        ItemContainer container = getContainerBySection(inventory, kitItem.section());
+
+        if (container != null) {
+            short slot = (short) kitItem.slot();
+            if (slot >= 0 && slot < container.getCapacity()) {
+                ItemStack existing = container.getItemStack(slot);
+                if (existing == null || existing.isEmpty()) {
+                    container.setItemStackForSlot(slot, itemStack);
+                    return null;
+                }
+            }
+            String section = kitItem.section().toLowerCase();
+            if (section.equals("armor") || section.equals("utility") || section.equals("tools")) {
+                ItemStackTransaction transaction = inventory.getCombinedHotbarFirst().addItemStack(itemStack);
+                return transaction.getRemainder();
+            }
+            ItemStackTransaction transaction = container.addItemStack(itemStack);
+            return transaction.getRemainder();
+        } else {
+            ItemStackTransaction transaction = inventory.getCombinedHotbarFirst().addItemStack(itemStack);
+            return transaction.getRemainder();
+        }
+    }
+
+    @Nullable
+    private static ItemContainer getContainerBySection(@Nonnull Inventory inventory, @Nonnull String section) {
+        return switch (section.toLowerCase()) {
+            case "hotbar" -> inventory.getHotbar();
+            case "storage" -> inventory.getStorage();
+            case "armor" -> inventory.getArmor();
+            case "utility" -> inventory.getUtility();
+            case "tools" -> inventory.getTools();
+            default -> null;
+        };
     }
 
     private static String capitalize(String str) {

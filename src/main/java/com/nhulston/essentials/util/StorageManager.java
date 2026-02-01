@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StorageManager {
     private final Path dataFolder;
@@ -24,9 +25,12 @@ public class StorageManager {
     private final Gson gson;
     private final ConcurrentHashMap<UUID, PlayerData> cache;
     private final ConcurrentHashMap<String, Warp> warps;
+    private final ConcurrentHashMap<String, UUID> usernameToUuid;
+    private final AtomicBoolean uuidIndexDirty;
     private volatile Spawn spawn;
 
     private static final Type WARPS_TYPE = new TypeToken<Map<String, Warp>>(){}.getType();
+    private static final Type UUIDS_TYPE = new TypeToken<Map<String, String>>(){}.getType();
 
     public StorageManager(@Nonnull Path dataFolder) {
         this.dataFolder = dataFolder;
@@ -34,6 +38,8 @@ public class StorageManager {
         this.gson = new GsonBuilder().create();
         this.cache = new ConcurrentHashMap<>();
         this.warps = new ConcurrentHashMap<>();
+        this.usernameToUuid = new ConcurrentHashMap<>();
+        this.uuidIndexDirty = new AtomicBoolean(false);
 
         try {
             Files.createDirectories(this.playersFolder);
@@ -43,6 +49,7 @@ public class StorageManager {
 
         loadWarps();
         loadSpawn();
+        loadUuidIndex();
     }
 
     // Player data methods
@@ -201,6 +208,94 @@ public class StorageManager {
         });
     }
 
+    // UUID index methods (username -> UUID mapping for offline player lookups)
+
+    /**
+     * Registers a player's username to UUID mapping.
+     * Call this when a player joins the server.
+     */
+    public void registerPlayer(@Nonnull String username, @Nonnull UUID uuid) {
+        String lowerUsername = username.toLowerCase();
+        UUID existing = usernameToUuid.get(lowerUsername);
+        
+        // Only save if this is a new mapping or UUID changed (name change)
+        if (existing == null || !existing.equals(uuid)) {
+            usernameToUuid.put(lowerUsername, uuid);
+            scheduleUuidIndexSave();
+        }
+    }
+
+    /**
+     * Gets a player's UUID by their username (case-insensitive).
+     * Works for both online and offline players who have joined before.
+     */
+    @Nullable
+    public UUID getUuidByUsername(@Nonnull String username) {
+        return usernameToUuid.get(username.toLowerCase());
+    }
+
+    private void loadUuidIndex() {
+        Path file = dataFolder.resolve("uuids.json");
+        if (Files.exists(file)) {
+            try {
+                String json = Files.readString(file);
+                Map<String, String> loaded = gson.fromJson(json, UUIDS_TYPE);
+                if (loaded != null) {
+                    for (Map.Entry<String, String> entry : loaded.entrySet()) {
+                        try {
+                            usernameToUuid.put(entry.getKey().toLowerCase(), UUID.fromString(entry.getValue()));
+                        } catch (IllegalArgumentException e) {
+                            Log.warning("Invalid UUID in uuids.json for " + entry.getKey() + ": " + entry.getValue());
+                        }
+                    }
+                }
+                Log.info("Loaded " + usernameToUuid.size() + " player UUID mappings.");
+            } catch (IOException e) {
+                Log.warning("Failed to load UUID index: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Schedules a UUID index save. Uses dirty flag to coalesce multiple rapid registrations
+     * into a single file write.
+     */
+    private void scheduleUuidIndexSave() {
+        // Mark as dirty and schedule save if not already pending
+        if (uuidIndexDirty.compareAndSet(false, true)) {
+            CompletableFuture.runAsync(() -> {
+                // Small delay to coalesce rapid joins
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                
+                // Reset dirty flag and save
+                uuidIndexDirty.set(false);
+                saveUuidIndex();
+            });
+        }
+    }
+
+    /**
+     * Saves the UUID index to disk. Called from async thread or shutdown.
+     */
+    private void saveUuidIndex() {
+        Path file = dataFolder.resolve("uuids.json");
+        try {
+            // Convert to Map<String, String> for JSON serialization
+            Map<String, String> toSave = new ConcurrentHashMap<>();
+            for (Map.Entry<String, UUID> entry : usernameToUuid.entrySet()) {
+                toSave.put(entry.getKey(), entry.getValue().toString());
+            }
+            String json = gson.toJson(toSave);
+            Files.writeString(file, json);
+        } catch (IOException e) {
+            Log.error("Failed to save UUID index: " + e.getMessage());
+        }
+    }
+
     public void shutdown() {
         // Save player data
         for (Map.Entry<UUID, PlayerData> entry : cache.entrySet()) {
@@ -233,5 +328,8 @@ public class StorageManager {
                 Log.error("Failed to save spawn on shutdown: " + e.getMessage());
             }
         }
+
+        // Save UUID index
+        saveUuidIndex();
     }
 }

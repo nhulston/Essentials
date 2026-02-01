@@ -1,9 +1,11 @@
 package com.nhulston.essentials.managers;
 
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.models.Home;
 import com.nhulston.essentials.models.PlayerData;
 import com.nhulston.essentials.util.ConfigManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.StorageManager;
 
 import javax.annotation.Nonnull;
@@ -20,10 +22,12 @@ public class HomeManager {
 
     private final StorageManager storageManager;
     private final ConfigManager configManager;
+    private final MessageManager messages;
 
     public HomeManager(@Nonnull StorageManager storageManager, @Nonnull ConfigManager configManager) {
         this.storageManager = storageManager;
         this.configManager = configManager;
+        this.messages = Essentials.getInstance().getMessageManager();
     }
 
     @Nonnull
@@ -55,13 +59,13 @@ public class HomeManager {
     @Nullable
     public String validateHomeName(@Nonnull String name) {
         if (name.isEmpty()) {
-            return "Home name cannot be empty.";
+            return messages.get("validation.home.name-empty");
         }
         if (name.length() > MAX_NAME_LENGTH) {
-            return "Home name cannot be longer than " + MAX_NAME_LENGTH + " characters.";
+            return messages.get("validation.home.name-too-long", Map.of("max", String.valueOf(MAX_NAME_LENGTH)));
         }
         if (!VALID_NAME_PATTERN.matcher(name).matches()) {
-            return "Home name must be alphanumeric only.";
+            return messages.get("validation.home.name-invalid");
         }
         return null;
     }
@@ -79,7 +83,12 @@ public class HomeManager {
 
         int maxHomes = getMaxHomes(playerUuid);
         if (data.getHome(lowerName) == null && data.getHomeCount() >= maxHomes) {
-            return "You have reached the maximum of " + maxHomes + " homes.";
+            if (maxHomes == 0) {
+                String msg = messages.get("validation.home.no-permission");
+                msg += "\nThis is because you don't have a homes tier permission. Contact the server owner if this is a mistake.";
+                return msg;
+            }
+            return messages.get("validation.home.max-reached", Map.of("max", String.valueOf(maxHomes)));
         }
 
         Home home = new Home(world, x, y, z, yaw, pitch, System.currentTimeMillis());

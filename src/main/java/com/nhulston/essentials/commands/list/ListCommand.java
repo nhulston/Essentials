@@ -4,10 +4,13 @@ import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -16,9 +19,11 @@ import java.util.stream.Collectors;
  * Usage: /list
  */
 public class ListCommand extends AbstractCommand {
+    private final MessageManager messages;
 
     public ListCommand() {
         super("list", "List all online players");
+        this.messages = Essentials.getInstance().getMessageManager();
         requirePermission("essentials.list");
     }
 
@@ -34,7 +39,7 @@ public class ListCommand extends AbstractCommand {
             playerNames = "None";
         }
         
-        Msg.prefix(context, "Players", playerNames);
+        Msg.send(context, messages.get("commands.list.prefix", Map.of("count", String.valueOf(players.size()))) + ": " + playerNames);
         return CompletableFuture.completedFuture(null);
     }
 }

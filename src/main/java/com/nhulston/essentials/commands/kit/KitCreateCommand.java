@@ -13,13 +13,16 @@ import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.KitManager;
 import com.nhulston.essentials.models.KitItem;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Subcommand to create a kit from the player's current inventory.
@@ -27,11 +30,13 @@ import java.util.List;
  */
 public class KitCreateCommand extends AbstractPlayerCommand {
     private final KitManager kitManager;
+    private final MessageManager messages;
     private final RequiredArg<String> nameArg;
 
     public KitCreateCommand(@Nonnull KitManager kitManager) {
         super("create", "Create a kit from your current inventory");
         this.kitManager = kitManager;
+        this.messages = Essentials.getInstance().getMessageManager();
 
         requirePermission("essentials.kit.create");
         this.nameArg = withRequiredArg("name", "Kit name", ArgTypes.STRING);
@@ -44,32 +49,32 @@ public class KitCreateCommand extends AbstractPlayerCommand {
 
         // Validate kit name
         if (!kitName.matches("^[a-zA-Z0-9_-]+$")) {
-            Msg.fail(context, "Kit name can only contain letters, numbers, underscores, and hyphens.");
+            Msg.send(context, messages.get("commands.kit.create.invalid-name"));
             return;
         }
 
         // Prevent reserved names
         if (kitName.equalsIgnoreCase("create") || kitName.equalsIgnoreCase("delete")) {
-            Msg.fail(context, "Cannot create a kit named '" + kitName + "'. This is a reserved command.");
+            Msg.send(context, messages.get("commands.kit.create.reserved-name", Map.of("name", kitName)));
             return;
         }
 
         // Check if kit already exists
         if (kitManager.getKit(kitName) != null) {
-            Msg.fail(context, "A kit named '" + kitName + "' already exists.");
+            Msg.send(context, messages.get("commands.kit.create.already-exists", Map.of("name", kitName)));
             return;
         }
 
         // Get player's inventory
         Player player = store.getComponent(ref, Player.getComponentType());
         if (player == null) {
-            Msg.fail(context, "Could not access your inventory.");
+            Msg.send(context, messages.get("commands.kit.create.inventory-error"));
             return;
         }
 
         Inventory inventory = player.getInventory();
         if (inventory == null) {
-            Msg.fail(context, "Could not access your inventory.");
+            Msg.send(context, messages.get("commands.kit.create.inventory-error"));
             return;
         }
 
@@ -91,15 +96,15 @@ public class KitCreateCommand extends AbstractPlayerCommand {
         collectItems(inventory.getTools(), "tools", items);
 
         if (items.isEmpty()) {
-            Msg.fail(context, "Your inventory is empty. Add some items before creating a kit.");
+            Msg.send(context, messages.get("commands.kit.create.empty-inventory"));
             return;
         }
 
         // Create the kit
         kitManager.createKit(kitName, items);
 
-        Msg.success(context, "Kit '" + kitName + "' created with " + items.size() + " items.");
-        Msg.info(context, "View kits.toml for additional configuration (cooldown, type, display name).");
+        Msg.send(context, messages.get("commands.kit.create.success", Map.of("name", kitName, "count", String.valueOf(items.size()))));
+        Msg.send(context, messages.get("commands.kit.create.config-info"));
     }
 
     /**

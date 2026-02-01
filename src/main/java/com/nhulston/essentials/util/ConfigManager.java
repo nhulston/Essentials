@@ -6,21 +6,12 @@ import org.tomlj.TomlTable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConfigManager {
     private static final String DEFAULT_CHAT_FORMAT = "&7%player%&f: %message%";
@@ -28,68 +19,87 @@ public class ConfigManager {
     private static final int DEFAULT_TELEPORT_DELAY = 3;
     private static final int DEFAULT_RTP_COOLDOWN = 300;
 
-    // Pattern to match section headers like [section], [section-name], or [section.subsection]
-    private static final Pattern SECTION_PATTERN = Pattern.compile("^\\[([a-zA-Z0-9_.-]+)]\\s*$");
+    /**
+     * Represents a chat format configuration entry with group name and format string.
+     * Used to maintain ordering of chat formats for priority-based matching.
+     */
+    public record ChatFormat(@Nonnull String group, @Nonnull String format) {}
 
     private final Path configPath;
 
     // Home limits by permission tier (e.g., essentials.homes.default -> 5)
-    private final HashMap<String, Integer> homeLimits = new HashMap<>();
+    private final ConcurrentHashMap<String, Integer> homeLimits = new ConcurrentHashMap<>();
 
     // Chat settings
-    private boolean chatEnabled = true;
-    private String chatFallbackFormat = DEFAULT_CHAT_FORMAT;
-    private final LinkedHashMap<String, String> chatFormats = new LinkedHashMap<>();
+    private volatile boolean chatEnabled = true;
+    private volatile String chatFallbackFormat = DEFAULT_CHAT_FORMAT;
+    private volatile List<ChatFormat> chatFormats = List.of();
 
     // Build settings
-    private boolean disableBuilding = false;
+    private volatile boolean disableBuilding = false;
 
     // Spawn settings
-    private boolean firstJoinSpawnEnabled = true;
-    private boolean everyJoinSpawnEnabled = false;
-    private boolean deathSpawnEnabled = true;
-
-    // Welcome broadcast settings
-    private boolean welcomeBroadcastEnabled = true;
-    private String welcomeBroadcastMessage = "&e%player% &6has joined the server for the first time!";
+    private volatile boolean firstJoinSpawnEnabled = true;
+    private volatile boolean everyJoinSpawnEnabled = false;
+    private volatile boolean deathSpawnEnabled = true;
 
     // Teleport settings
-    private int teleportDelay = DEFAULT_TELEPORT_DELAY;
+    private volatile int teleportDelay = DEFAULT_TELEPORT_DELAY;
+
+    // TPA settings
+    private volatile int tpaExpiration = 60;
 
     // Spawn protection settings
-    private boolean spawnProtectionEnabled = true;
-    private int spawnProtectionRadius = DEFAULT_SPAWN_PROTECTION_RADIUS;
-    private int spawnProtectionMinY = -1;
-    private int spawnProtectionMaxY = -1;
-    private boolean spawnProtectionInvulnerable = true;
-    private boolean spawnProtectionShowTitles = true;
-    private String spawnProtectionEnterTitle = "Entering Spawn";
-    private String spawnProtectionEnterSubtitle = "This is a protected area";
-    private String spawnProtectionExitTitle = "Leaving Spawn";
-    private String spawnProtectionExitSubtitle = "You can now build";
+    private volatile boolean spawnProtectionEnabled = true;
+    private volatile int spawnProtectionRadius = DEFAULT_SPAWN_PROTECTION_RADIUS;
+    private volatile int spawnProtectionMinY = -1;
+    private volatile int spawnProtectionMaxY = -1;
+    private volatile boolean spawnProtectionInvulnerable = true;
+    private volatile boolean spawnProtectionShowTitles = true;
+    private volatile String spawnProtectionEnterTitle = "Entering Spawn";
+    private volatile String spawnProtectionEnterSubtitle = "This is a protected area";
+    private volatile String spawnProtectionExitTitle = "Leaving Spawn";
+    private volatile String spawnProtectionExitSubtitle = "You can now build";
 
     // RTP settings
-    private int rtpCooldown = DEFAULT_RTP_COOLDOWN;
-    private String rtpDefaultWorld = "default";
-    private final HashMap<String, Integer> rtpWorlds = new HashMap<>();
+    private volatile int rtpCooldown = DEFAULT_RTP_COOLDOWN;
+    private volatile String rtpDefaultWorld = "default";
+    private final ConcurrentHashMap<String, Integer> rtpWorlds = new ConcurrentHashMap<>();
 
     // AFK settings
     private long afkKickTime = 0L;
     private String afkKickMessage = "You have been kicked for idling more than %period% seconds!";
 
     // MOTD settings
-    private boolean motdEnabled = true;
-    private String motdMessage = "&6Welcome to the server, &e%player%&6!";
+    private volatile boolean motdEnabled = true;
+    private volatile String motdMessage = "&6Welcome to the server, &e%player%&6!";
 
     // Sleep settings
-    private boolean sleepEnabled = true;
-    private int sleepPercentage = 20;
+    private volatile boolean sleepEnabled = true;
+    private volatile int sleepPercentage = 20;
 
     // Shout settings
-    private String shoutPrefix = "&0[&7Broadcast&0] &f";
+    private volatile String shoutPrefix = "&0[&7Broadcast&0] &f";
 
     // Repair settings
-    private int repairCooldown = 43200;
+    private volatile int repairCooldown = 43200;
+
+    // Join/Leave message settings
+    private volatile boolean joinMessageEnabled = true;
+    private volatile String joinMessage = "&e%player% &ajoined the game";
+    private volatile String firstJoinMessage = "&e%player% &6joined the game for the first time!";
+    private volatile boolean leaveMessageEnabled = true;
+    private volatile String leaveMessage = "&e%player% &cleft the game";
+    
+    // Rules settings
+    private volatile String rulesMessage = "&6=== Server Rules ===\n&e1. &fBe respectful to all players\n&e2. &fNo griefing or stealing\n&e3. &fNo hacking or cheating\n&e4. &fHave fun!";
+
+    // Starter kit settings
+    private volatile boolean starterKitEnabled = false;
+    private volatile String starterKitName = "";
+
+    // Update notification settings
+    private volatile boolean updateNotifyEnabled = true;
 
     public ConfigManager(@Nonnull Path dataFolder) {
         this.configPath = dataFolder.resolve("config.toml");
@@ -98,24 +108,13 @@ public class ConfigManager {
 
     private void load() {
         if (!Files.exists(configPath)) {
-            createDefault();
+            TomlMigrationHelper.createDefault(configPath, "config.toml");
         } else {
-            // Check for missing sections and add them
-            migrateConfig();
+            TomlMigrationHelper.migrateToml(configPath, "config.toml");
         }
 
         try {
-            // Read file as bytes first to handle potential BOM
-            byte[] bytes = Files.readAllBytes(configPath);
-            String configContent;
-            
-            // Check for UTF-8 BOM and skip it if present
-            if (bytes.length >= 3 && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
-                configContent = new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
-            } else {
-                configContent = new String(bytes, StandardCharsets.UTF_8);
-            }
-            
+            String configContent = TomlMigrationHelper.readWithBom(configPath);
             TomlParseResult config = Toml.parse(configContent);
 
             if (config.hasErrors()) {
@@ -141,15 +140,18 @@ public class ConfigManager {
             chatFallbackFormat = config.getString("chat.fallback-format", () -> DEFAULT_CHAT_FORMAT);
 
             // Load chat formats (preserve order for priority)
-            chatFormats.clear();
             TomlTable formatsTable = config.getTable("chat.formats");
             if (formatsTable != null) {
+                List<ChatFormat> formats = new ArrayList<>();
                 for (String group : formatsTable.keySet()) {
                     String format = formatsTable.getString(group);
                     if (format != null) {
-                        chatFormats.put(group.toLowerCase(), format);
+                        formats.add(new ChatFormat(group.toLowerCase(), format));
                     }
                 }
+                chatFormats = List.copyOf(formats);
+            } else {
+                chatFormats = List.of();
             }
 
             // Build config
@@ -160,13 +162,11 @@ public class ConfigManager {
             everyJoinSpawnEnabled = config.getBoolean("spawn.every-join", () -> false);
             deathSpawnEnabled = config.getBoolean("spawn.death-spawn", () -> true);
 
-            // Welcome broadcast config
-            welcomeBroadcastEnabled = config.getBoolean("welcome-broadcast.enabled", () -> true);
-            welcomeBroadcastMessage = config.getString("welcome-broadcast.message", 
-                    () -> "&e%player% &6has joined the server for the first time!");
-
             // Teleport config
             teleportDelay = getIntSafe(config, "teleport.delay", DEFAULT_TELEPORT_DELAY);
+
+            // TPA config
+            tpaExpiration = getIntSafe(config, "tpa.expiration", 60);
 
             // Spawn protection config
             spawnProtectionEnabled = config.getBoolean("spawn-protection.enabled", () -> true);
@@ -215,6 +215,23 @@ public class ConfigManager {
             // Repair config
             repairCooldown = getIntSafe(config, "repair.cooldown", 43200);
 
+            // Join/Leave messages config
+            joinMessageEnabled = config.getBoolean("join-leave-messages.join-enabled", () -> true);
+            joinMessage = config.getString("join-leave-messages.join-message", () -> "&8[&a+&8] &7%player%");
+            firstJoinMessage = config.getString("join-leave-messages.first-join-message", () -> "&e%player% &6joined the game for the first time!");
+            leaveMessageEnabled = config.getBoolean("join-leave-messages.leave-enabled", () -> true);
+            leaveMessage = config.getString("join-leave-messages.leave-message", () -> "&8[&c-&8] &7%player%");
+            
+            // Rules config
+            rulesMessage = config.getString("rules.message", () -> "&6=== Server Rules ===\n&e1. &fBe respectful to all players\n&e2. &fNo griefing or stealing\n&e3. &fNo hacking or cheating\n&e4. &fHave fun!");
+
+            // Starter kit config
+            starterKitEnabled = config.getBoolean("starter-kit.enabled", () -> false);
+            starterKitName = config.getString("starter-kit.kit", () -> "");
+
+            // Update notification config
+            updateNotifyEnabled = config.getBoolean("updates.notify", () -> true);
+
             Log.info("Config loaded!");
         } catch (Exception e) {
             Log.error("Failed to load config: " + e.getClass().getSimpleName() + " - " + e.getMessage());
@@ -237,181 +254,12 @@ public class ConfigManager {
      * Migrates the user's config by adding any missing sections from the default config.
      * Preserves user's existing values and comments.
      */
-    private void migrateConfig() {
-        String defaultConfig = loadDefaultConfigFromResources();
-        if (defaultConfig == null) {
-            Log.warning("Could not load default config from resources for migration.");
-            return;
-        }
-
-        try {
-            // Read user config as bytes first to handle potential BOM
-            byte[] bytes = Files.readAllBytes(configPath);
-            String userConfig;
-            
-            // Check for UTF-8 BOM and skip it if present
-            if (bytes.length >= 3 && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
-                userConfig = new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
-            } else {
-                userConfig = new String(bytes, StandardCharsets.UTF_8);
-            }
-            
-            // Find sections in both configs
-            Set<String> userSections = findTopLevelSections(userConfig);
-            Map<String, String> defaultSections = extractSections(defaultConfig);
-            
-            // Find missing sections
-            List<String> missingSections = new ArrayList<>();
-            for (String section : defaultSections.keySet()) {
-                if (!userSections.contains(section)) {
-                    missingSections.add(section);
-                }
-            }
-            
-            if (missingSections.isEmpty()) {
-                return;
-            }
-            
-            // Append missing sections to user config
-            StringBuilder newConfig = new StringBuilder(userConfig);
-            if (!userConfig.endsWith("\n")) {
-                newConfig.append("\n");
-            }
-            
-            for (String section : missingSections) {
-                newConfig.append("\n");
-                newConfig.append(defaultSections.get(section));
-                Log.info("Added missing config section: [" + section + "]");
-            }
-            
-            Files.writeString(configPath, newConfig.toString(), StandardCharsets.UTF_8);
-            Log.info("Config migrated with " + missingSections.size() + " new section(s).");
-            
-        } catch (Exception e) {
-            Log.warning("Config migration skipped: " + e.getClass().getName() + " - " + e.getMessage());
-        }
-    }
-
-    /**
-     * Loads the default config.toml content from resources.
-     */
-    @Nullable
-    private String loadDefaultConfigFromResources() {
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("config.toml")) {
-            if (is == null) {
-                return null;
-            }
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                return sb.toString();
-            }
-        } catch (IOException e) {
-            Log.warning("Failed to load default config from resources: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Finds all section names in a TOML config string.
-     * Matches [section] and [section.subsection].
-     */
-    @Nonnull
-    private Set<String> findTopLevelSections(@Nonnull String config) {
-        LinkedHashMap<String, Boolean> map = new LinkedHashMap<>();
-        
-        for (String line : config.split("\n")) {
-            Matcher matcher = SECTION_PATTERN.matcher(line.trim());
-            if (matcher.matches()) {
-                map.put(matcher.group(1), true);
-            }
-        }
-        
-        return map.keySet();
-    }
-
-    /**
-     * Extracts all sections from a TOML config string.
-     * Returns a map of section name -> full section content (including header, comments, and values).
-     */
-    @Nonnull
-    private Map<String, String> extractSections(@Nonnull String config) {
-        Map<String, String> sections = new LinkedHashMap<>();
-        String[] lines = config.split("\n");
-        
-        String currentSection = null;
-        StringBuilder currentContent = new StringBuilder();
-        List<String> pendingComments = new ArrayList<>();
-        
-        for (String line : lines) {
-            Matcher matcher = SECTION_PATTERN.matcher(line.trim());
-            
-            if (matcher.matches()) {
-                // Save previous section
-                if (currentSection != null) {
-                    sections.put(currentSection, currentContent.toString());
-                }
-                
-                // Start new section
-                currentSection = matcher.group(1);
-                currentContent = new StringBuilder();
-                
-                // Add any pending comments (comments before this section header)
-                for (String comment : pendingComments) {
-                    currentContent.append(comment).append("\n");
-                }
-                pendingComments.clear();
-                
-                currentContent.append(line).append("\n");
-            } else if (currentSection != null) {
-                // Add line to current section
-                currentContent.append(line).append("\n");
-            } else {
-                // Lines before any section (could be comments for first section)
-                if (line.trim().startsWith("#") || line.trim().isEmpty()) {
-                    pendingComments.add(line);
-                }
-            }
-        }
-        
-        // Save last section
-        if (currentSection != null) {
-            sections.put(currentSection, currentContent.toString());
-        }
-        
-        return sections;
-    }
-
-    /**
-     * Safely gets an integer value from the config, with fallback to default.
-     */
     private int getIntSafe(@Nonnull TomlParseResult config, @Nonnull String key, int defaultValue) {
         try {
             Long value = config.getLong(key);
             return value != null ? Math.toIntExact(value) : defaultValue;
         } catch (Exception e) {
             return defaultValue;
-        }
-    }
-
-    private void createDefault() {
-        try {
-            Files.createDirectories(configPath.getParent());
-
-            try (InputStream is = getClass().getClassLoader().getResourceAsStream("config.toml")) {
-                if (is != null) {
-                    Files.copy(is, configPath);
-                    Log.info("Created default config.");
-                    return;
-                }
-            }
-
-            Log.error("Could not find config.toml in resources.");
-        } catch (IOException e) {
-            Log.error("Failed to create default config: " + e.getMessage());
         }
     }
 
@@ -433,7 +281,7 @@ public class ConfigManager {
     }
 
     @Nonnull
-    public Map<String, String> getChatFormats() {
+    public List<ChatFormat> getChatFormats() {
         return chatFormats;
     }
 
@@ -453,17 +301,12 @@ public class ConfigManager {
         return deathSpawnEnabled;
     }
 
-    public boolean isWelcomeBroadcastEnabled() {
-        return welcomeBroadcastEnabled;
-    }
-
-    @Nonnull
-    public String getWelcomeBroadcastMessage() {
-        return welcomeBroadcastMessage;
-    }
-
     public int getTeleportDelay() {
         return teleportDelay;
+    }
+
+    public int getTpaExpiration() {
+        return tpaExpiration;
     }
 
     public boolean isSpawnProtectionEnabled() {
@@ -563,5 +406,46 @@ public class ConfigManager {
 
     public int getRepairCooldown() {
         return repairCooldown;
+    }
+
+    public boolean isJoinMessageEnabled() {
+        return joinMessageEnabled;
+    }
+
+    @Nonnull
+    public String getJoinMessage() {
+        return joinMessage;
+    }
+
+    @Nonnull
+    public String getFirstJoinMessage() {
+        return firstJoinMessage;
+    }
+
+    public boolean isLeaveMessageEnabled() {
+        return leaveMessageEnabled;
+    }
+
+    @Nonnull
+    public String getLeaveMessage() {
+        return leaveMessage;
+    }
+    
+    @Nonnull
+    public String getRulesMessage() {
+        return rulesMessage;
+    }
+
+    public boolean isStarterKitEnabled() {
+        return starterKitEnabled;
+    }
+
+    @Nonnull
+    public String getStarterKitName() {
+        return starterKitName;
+    }
+
+    public boolean isUpdateNotifyEnabled() {
+        return updateNotifyEnabled;
     }
 }

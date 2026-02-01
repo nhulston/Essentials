@@ -8,6 +8,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
@@ -25,11 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MsgCommand extends AbstractPlayerCommand {
     // Track last conversation partner for /reply
     private static final Map<UUID, UUID> lastMessagePartner = new ConcurrentHashMap<>();
+    private final MessageManager messages;
 
     public MsgCommand() {
         // Don't register any args - we'll parse everything from raw input
         // This allows multi-word messages without quotes
         super("msg", "Send a private message to a player");
+        this.messages = Essentials.getInstance().getMessageManager();
         
         // Allow extra arguments since we parse them manually
         setAllowsExtraArguments(true);
@@ -46,7 +50,7 @@ public class MsgCommand extends AbstractPlayerCommand {
         String[] parts = rawInput.split("\\s+", 3); // Split into [command, player, message]
         
         if (parts.length < 3) {
-            Msg.fail(context, "Usage: /msg <player> <message>");
+            Msg.send(context, messages.get("commands.msg.usage"));
             return;
         }
         
@@ -57,31 +61,33 @@ public class MsgCommand extends AbstractPlayerCommand {
         PlayerRef target = findPlayer(targetName);
         
         if (target == null) {
-            Msg.fail(context, "Player '" + targetName + "' not found.");
+            Msg.send(context, messages.get("commands.msg.player-not-found", Map.of("player", targetName)));
             return;
         }
 
         if (target.getUuid().equals(playerRef.getUuid())) {
-            Msg.fail(context, "You cannot message yourself.");
+            Msg.send(context, messages.get("commands.msg.cannot-self"));
             return;
         }
 
-        sendMessage(playerRef, target, message, context);
+        sendMessage(playerRef, target, message, context, messages);
     }
 
     /**
      * Send a private message and track for /reply.
      */
     public static void sendMessage(@Nonnull PlayerRef sender, @Nonnull PlayerRef target, 
-                                   @Nonnull String message, @Nullable CommandContext context) {
+                                   @Nonnull String message, @Nullable CommandContext context,
+                                   @Nonnull MessageManager messages) {
         // Send to target: [From PlayerName] message
-        Msg.info(target, "[From " + sender.getUsername() + "] " + message);
+        Msg.send(target, messages.get("commands.msg.format-from", Map.of("player", sender.getUsername(), "message", message)));
         
         // Confirm to sender: [To PlayerName] message
+        String toMessage = messages.get("commands.msg.format-to", Map.of("player", target.getUsername(), "message", message));
         if (context != null) {
-            Msg.info(context, "[To " + target.getUsername() + "] " + message);
+            Msg.send(context, toMessage);
         } else {
-            Msg.info(sender, "[To " + target.getUsername() + "] " + message);
+            Msg.send(sender, toMessage);
         }
 
         // Track last message partner for both players (for /reply)

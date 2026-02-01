@@ -1,0 +1,212 @@
+# Essentials Messages Configuration
+# 
+# Color Codes:
+#   Standard: &0-&9, &a-&f (e.g. &a = green, &c = red, &e = yellow)
+#   Custom Hex: &#RRGGBB (e.g. &#FF5555 = custom red, &#55FF55 = custom green)
+#   You can mix multiple colors in one message: "&aHello &#FF5555World"
+#
+# Placeholders: Use {player}, {home}, {warp}, {time}, etc. where applicable
+#
+# Leave a message blank ("") to disable it completely
+#
+# You can make any text have multiple lines by doing something like this:
+# join-message = """
+# &aLine 1
+# &bLine 2
+# """
+# See the MOTD section in config.toml for an example.
+
+[commands.home]
+no-homes = "&cYou don't have any homes set. Use /sethome to set one."
+not-found = "&cHome '{home}' not found."
+list-prefix = "&aHomes&f"
+teleported = "&aTeleported to home '{home}'."
+# Admin commands for viewing/teleporting to other players' homes
+player-not-found = "&cPlayer '{player}' not found or has never joined."
+other-no-homes = "&c{player} doesn't have any homes set."
+other-list-prefix = "&a{player}'s homes&f"
+other-not-found = "&cHome '{home}' not found for {player}."
+other-teleported = "&aTeleported to {player}'s home '{home}'."
+
+[commands.sethome]
+success = "&aSuccessfully set home '{home}'."
+position-error = "&cCould not get your position. Try again."
+
+[commands.delhome]
+success = "&aHome '{home}' deleted."
+not-found = "&cHome '{home}' not found."
+
+[commands.spawn]
+not-set = "&cSpawn has not been set."
+teleported = "&aTeleported to spawn."
+teleported-other = "&aTeleported {player} to spawn."
+teleported-by = "&eYou have been teleported to spawn by {sender}."
+console-requires-player = "&cConsole must specify a player: /spawn <player>"
+player-not-found = "&cPlayer not found."
+
+[commands.setspawn]
+success = "&aSpawn set!"
+position-error = "&cCould not get your position. Try again."
+
+[commands.warp]
+no-warps = "&cNo warps have been set."
+not-found = "&cWarp '{warp}' not found."
+list-prefix = "&6Warps"
+teleported = "&aTeleported to warp '{warp}'"
+teleported-other = "&aTeleported {player} to warp '{warp}'."
+teleported-by = "&eYou have been teleported to warp '{warp}' by {sender}."
+console-requires-player = "&cConsole must specify a player: /warp <warpname> <player>"
+
+[commands.setwarp]
+success = "&aWarp '{warp}' set in world {world}"
+position-error = "&cCould not get your position. Try again."
+
+[commands.delwarp]
+success = "&aWarp '{warp}' deleted."
+not-found = "&cWarp '{warp}' not found."
+
+[commands.back]
+no-location = "&cYou have no previous location to return to."
+teleported = "&aTeleported to your previous location."
+
+[commands.tpa]
+player-not-found = "&cPlayer not found."
+cannot-self = "&cYou cannot send a teleport request to yourself."
+already-pending = "&cYou already have a pending teleport request to {player}."
+request-sent = "&aTeleport request sent to {player}."
+request-received = "&e{player} has requested to teleport to you."
+accept-instruction = "&7Type '/tpaccept {player}' to accept."
+
+[commands.tpaccept]
+no-requests = "&cNo pending teleport requests."
+no-request-from = "&cNo pending teleport request from {player}."
+player-offline = "&c{player} is no longer online."
+player-unavailable = "&c{player} is no longer available."
+accepted = "&aTeleport request from {player} accepted."
+teleported = "&aTeleported to {player}."
+
+[commands.tphere]
+player-not-found = "&cPlayer not found."
+cannot-self = "&cYou cannot teleport yourself to yourself."
+success = "&aTeleported {player} to you."
+teleported = "&eYou have been teleported to {player}."
+
+[commands.rtp]
+cooldown = "&cRTP is on cooldown. {time} remaining."
+not-enabled = "&cRTP is not enabled in this world."
+world-not-loaded = "&cRTP world '{world}' is not loaded."
+no-safe-location = "&cCould not find a safe location after {attempts} attempts. Try again."
+failed = "&cRTP failed. Please try again."
+teleported = "&aRandomly teleported!"
+
+[commands.kit]
+player-error = "&cCould not get player component."
+not-found = "&cKit '{kit}' not found."
+no-permission = "&cYou don't have permission to use this kit."
+cooldown = "&cThis kit is on cooldown. {time} remaining."
+received = "&aYou received the {kit} kit!"
+given = "&aGave {kit} kit to {player}."
+player-not-found = "&cPlayer '{player}' not found or not online."
+
+[commands.kit.create]
+success = "&aKit '{name}' created with {count} items."
+config-info = "&7View kits.toml for additional configuration (cooldown, type, display name)."
+invalid-name = "&cKit name can only contain letters, numbers, underscores, and hyphens."
+reserved-name = "&cCannot create a kit named '{name}'. This is a reserved command."
+already-exists = "&cA kit named '{name}' already exists."
+empty-inventory = "&cYour inventory is empty. Add some items before creating a kit."
+inventory-error = "&cCould not access your inventory."
+
+[commands.kit.delete]
+success = "&aKit '{name}' has been deleted."
+not-found = "&cKit '{name}' does not exist."
+
+[commands.msg]
+usage = "&cUsage: /msg <player> <message>"
+player-not-found = "&cPlayer '{player}' not found."
+cannot-self = "&cYou cannot message yourself."
+format-from = "&7[From {player}] &f{message}"
+format-to = "&7[To {player}] &f{message}"
+
+[commands.reply]
+usage = "&cUsage: /r <message>"
+no-one = "&cYou have no one to reply to."
+player-offline = "&cThat player is no longer online."
+
+[commands.shout]
+usage = "&cUsage: /shout <message>"
+
+[commands.repair]
+cooldown = "&cRepair is on cooldown. {time} remaining."
+player-data-error = "&cCould not access player data."
+inventory-error = "&cCould not access your inventory."
+no-item = "&cYou are not holding any item."
+cannot-repair = "&cThis item cannot be repaired."
+already-full = "&cThis item is already at full durability."
+success = "&aItem repaired."
+
+[commands.top]
+position-error = "&cCould not get your position."
+chunk-not-loaded = "&cChunk not loaded."
+no-ground = "&cNo solid ground found above."
+teleported = "&aPoof!"
+
+[commands.list]
+prefix = "&6Players ({count})"
+
+[commands.essentials.reload]
+success = "&aConfiguration reloaded."
+
+[commands.god]
+enabled = "&aGod mode enabled."
+disabled = "&cGod mode disabled."
+
+[commands.freecam]
+enabled = "&aFreecam enabled. Type /freecam again to return."
+disabled = "&cFreecam disabled."
+
+[commands.heal]
+success = "&aYou have been healed."
+stats-error = "&cCould not access your stats."
+
+[teleport]
+already-pending = "&cYou already have a pending teleport. Please wait."
+countdown = "&eTeleporting in {delay} seconds. Don't move!"
+cancelled-moved = "&cTeleport cancelled because you moved."
+failed = "&cTeleport failed."
+world-not-loaded = "&cWorld '{world}' is not loaded."
+
+[tpa]
+request-expired = "&cYour teleport request to {player} has expired."
+
+[gui.kit]
+not-found = "&cKit not found."
+no-permission = "&cYou don't have permission to use this kit."
+cooldown = "&cThis kit is on cooldown. {time} remaining."
+inventory-error = "&cCould not access your inventory."
+received = "&aYou received the {kit} kit!"
+
+[update]
+available = "&8[&6Essentials&8] &eA new version is available!"
+version-info = "&7Current: &f{current} &8| &7Latest: &a{latest}"
+
+[sleep]
+skipping = "&eGoodnight! Skipping to morning..."
+
+[validation.home]
+name-empty = "&cHome name cannot be empty."
+name-too-long = "&cHome name cannot be longer than {max} characters."
+name-invalid = "&cHome name must be alphanumeric only."
+no-permission = "&cYou don't have permission to set homes."
+max-reached = "&cYou have reached the maximum of {max} homes."
+
+[validation.warp]
+name-empty = "&cWarp name cannot be empty."
+name-too-long = "&cWarp name cannot be longer than {max} characters."
+name-invalid = "&cWarp name must be alphanumeric only."
+
+[trash]
+opened = "&aTrash bin opened. Items placed here will be instantly destroyed."
+
+[errors]
+generic = "&cAn error occurred. Please try again."

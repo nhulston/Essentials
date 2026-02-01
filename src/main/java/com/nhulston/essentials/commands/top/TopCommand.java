@@ -15,6 +15,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 import com.nhulston.essentials.util.TeleportUtil;
 
@@ -26,9 +28,11 @@ import javax.annotation.Nonnull;
  */
 public class TopCommand extends AbstractPlayerCommand {
     private static final int MAX_HEIGHT = 256;
+    private final MessageManager messages;
 
     public TopCommand() {
         super("top", "Teleport to the highest block");
+        this.messages = Essentials.getInstance().getMessageManager();
         requirePermission("essentials.top");
     }
 
@@ -38,7 +42,7 @@ public class TopCommand extends AbstractPlayerCommand {
         // Get player's current position
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
-            Msg.fail(context, "Could not get your position.");
+            Msg.send(context, messages.get("commands.top.position-error"));
             return;
         }
 
@@ -50,14 +54,14 @@ public class TopCommand extends AbstractPlayerCommand {
         long chunkIndex = ChunkUtil.indexChunkFromBlock(blockX, blockZ);
         WorldChunk chunk = world.getChunk(chunkIndex);
         if (chunk == null) {
-            Msg.fail(context, "Chunk not loaded.");
+            Msg.send(context, messages.get("commands.top.chunk-not-loaded"));
             return;
         }
 
         // Find highest solid block from top down
         Integer topY = findHighestSolidBlock(chunk, blockX, blockZ);
         if (topY == null) {
-            Msg.fail(context, "No solid ground found above.");
+            Msg.send(context, messages.get("commands.top.no-ground"));
             return;
         }
 
@@ -75,7 +79,7 @@ public class TopCommand extends AbstractPlayerCommand {
         Teleport teleport = new Teleport(world, targetPos, rotation);
         store.putComponent(ref, Teleport.getComponentType(), teleport);
 
-        Msg.success(context, "Poof!");
+        Msg.send(context, messages.get("commands.top.teleported"));
     }
 
     /**

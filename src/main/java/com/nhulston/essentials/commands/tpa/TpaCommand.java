@@ -9,11 +9,14 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.TpaManager;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 import com.nhulston.essentials.util.SoundUtil;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 /**
  * Command to request teleportation to another player.
@@ -21,11 +24,13 @@ import javax.annotation.Nonnull;
  */
 public class TpaCommand extends AbstractPlayerCommand {
     private final TpaManager tpaManager;
+    private final MessageManager messages;
     private final RequiredArg<PlayerRef> targetArg;
 
     public TpaCommand(@Nonnull TpaManager tpaManager) {
         super("tpa", "Request to teleport to a player");
         this.tpaManager = tpaManager;
+        this.messages = Essentials.getInstance().getMessageManager();
         this.targetArg = withRequiredArg("player", "Player to teleport to", ArgTypes.PLAYER_REF);
 
         requirePermission("essentials.tpa");
@@ -37,27 +42,33 @@ public class TpaCommand extends AbstractPlayerCommand {
         PlayerRef target = context.get(targetArg);
 
         if (target == null) {
-            Msg.fail(context, "Player not found.");
+            Msg.send(context, messages.get("commands.tpa.player-not-found"));
+            return;
+        }
+
+        Ref<EntityStore> targetRef = target.getReference();
+        if (targetRef == null || !targetRef.isValid()) {
+            Msg.send(context, messages.get("commands.tpa.player-not-found"));
             return;
         }
 
         if (target.getUuid().equals(playerRef.getUuid())) {
-            Msg.fail(context, "You cannot send a teleport request to yourself.");
+            Msg.send(context, messages.get("commands.tpa.cannot-self"));
             return;
         }
 
         boolean created = tpaManager.createRequest(playerRef, target);
         if (!created) {
-            Msg.fail(context, "You already have a pending teleport request to " + target.getUsername() + ".");
+            Msg.send(context, messages.get("commands.tpa.already-pending", Map.of("player", target.getUsername())));
             return;
         }
 
         // Notify the requester
-        Msg.success(context, "Teleport request sent to " + target.getUsername() + ".");
+        Msg.send(context, messages.get("commands.tpa.request-sent", Map.of("player", target.getUsername())));
 
         // Notify the target
         SoundUtil.playSound(target, "SFX_Alchemy_Bench_Close");
-        Msg.info(target, playerRef.getUsername() + " has requested to teleport to you.");
-        Msg.info(target, "Type '/tpaccept " + playerRef.getUsername() + "' to accept.");
+        Msg.send(target, messages.get("commands.tpa.request-received", Map.of("player", playerRef.getUsername())));
+        Msg.send(target, messages.get("commands.tpa.accept-instruction", Map.of("player", playerRef.getUsername())));
     }
 }

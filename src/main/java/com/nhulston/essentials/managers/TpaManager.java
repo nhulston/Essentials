@@ -2,7 +2,10 @@ package com.nhulston.essentials.managers;
 
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.ConfigManager;
 import com.nhulston.essentials.util.Log;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
@@ -19,8 +22,13 @@ public class TpaManager {
     // Map of target player UUID -> Map of requester UUID -> request
     private final ConcurrentHashMap<UUID, ConcurrentHashMap<UUID, TpaRequest>> pendingRequests = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final MessageManager messages;
+    private final ConfigManager configManager;
     
-    private static final long EXPIRATION_SECONDS = 20;
+    public TpaManager(ConfigManager configManager) {
+        this.messages = Essentials.getInstance().getMessageManager();
+        this.configManager = configManager;
+    }
 
     /**
      * Creates a teleport request from one player to another.
@@ -47,13 +55,24 @@ public class TpaManager {
         targetRequests.put(requesterUuid, request);
         
         // Schedule expiration
+        long expirationSeconds = configManager.getTpaExpiration();
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             expireRequest(targetUuid, requesterUuid);
-        }, EXPIRATION_SECONDS, TimeUnit.SECONDS);
+        }, expirationSeconds, TimeUnit.SECONDS);
         request.setExpirationFuture(future);
         
         Log.info("TPA request created: " + requester.getUsername() + " -> " + target.getUsername());
         return true;
+    }
+
+    /**
+     * Accepts the most recent teleport request.
+     * @param target The player accepting the request
+     * @return The TpaRequest if found and valid, null otherwise
+     */
+    @Nullable
+    public TpaRequest acceptMostRecentRequest(@Nonnull PlayerRef target) {
+        return acceptRequestInternal(target, null);
     }
 
     /**
@@ -64,6 +83,11 @@ public class TpaManager {
      */
     @Nullable
     public TpaRequest acceptRequest(@Nonnull PlayerRef target, @Nonnull String requesterName) {
+        return acceptRequestInternal(target, requesterName);
+    }
+
+    @Nullable
+    private TpaRequest acceptRequestInternal(@Nonnull PlayerRef target, @Nullable String requesterName) {
         UUID targetUuid = target.getUuid();
         ConcurrentHashMap<UUID, TpaRequest> targetRequests = pendingRequests.get(targetUuid);
         
@@ -71,15 +95,29 @@ public class TpaManager {
             return null;
         }
         
-        // Find the request by requester name (case-insensitive)
         TpaRequest foundRequest = null;
         UUID foundRequesterUuid = null;
         
-        for (Map.Entry<UUID, TpaRequest> entry : targetRequests.entrySet()) {
-            if (entry.getValue().getRequesterName().equalsIgnoreCase(requesterName)) {
-                foundRequest = entry.getValue();
-                foundRequesterUuid = entry.getKey();
-                break;
+        if (requesterName == null) {
+            // Find the most recent request by timestamp
+            long mostRecentTimestamp = 0;
+            
+            for (Map.Entry<UUID, TpaRequest> entry : targetRequests.entrySet()) {
+                TpaRequest request = entry.getValue();
+                if (request.getTimestamp() > mostRecentTimestamp) {
+                    foundRequest = request;
+                    foundRequesterUuid = entry.getKey();
+                    mostRecentTimestamp = request.getTimestamp();
+                }
+            }
+        } else {
+            // Find the request by requester name (case-insensitive)
+            for (Map.Entry<UUID, TpaRequest> entry : targetRequests.entrySet()) {
+                if (entry.getValue().getRequesterName().equalsIgnoreCase(requesterName)) {
+                    foundRequest = entry.getValue();
+                    foundRequesterUuid = entry.getKey();
+                    break;
+                }
             }
         }
         
@@ -119,7 +157,7 @@ public class TpaManager {
             // Notify the requester that their request expired
             PlayerRef requester = Universe.get().getPlayer(requesterUuid);
             if (requester != null) {
-                Msg.fail(requester, "Your teleport request to " + request.getTargetName() + " has expired.");
+                Msg.send(requester, messages.get("tpa.request-expired", Map.of("player", request.getTargetName())));
             }
         }
     }
@@ -165,12 +203,14 @@ public class TpaManager {
         private final UUID requesterUuid;
         private final String requesterName;
         private final String targetName;
+        private final long timestamp;
         private ScheduledFuture<?> expirationFuture;
 
         public TpaRequest(UUID requesterUuid, String requesterName, String targetName) {
             this.requesterUuid = requesterUuid;
             this.requesterName = requesterName;
             this.targetName = targetName;
+            this.timestamp = System.currentTimeMillis();
         }
 
         public UUID getRequesterUuid() {
@@ -183,6 +223,10 @@ public class TpaManager {
 
         public String getTargetName() {
             return targetName;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
         }
 
         void setExpirationFuture(ScheduledFuture<?> future) {

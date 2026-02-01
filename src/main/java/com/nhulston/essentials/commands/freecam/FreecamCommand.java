@@ -8,6 +8,8 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayer
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.util.MessageManager;
 import com.nhulston.essentials.util.Msg;
 
 import javax.annotation.Nonnull;
@@ -22,9 +24,11 @@ import java.util.UUID;
 public class FreecamCommand extends AbstractPlayerCommand {
     // Track players with freecam enabled
     private static final Set<UUID> freecamPlayers = new HashSet<>();
+    private final MessageManager messages;
 
     public FreecamCommand() {
         super("freecam", "Toggle freecam mode");
+        this.messages = Essentials.getInstance().getMessageManager();
         requirePermission("essentials.freecam");
     }
 
@@ -40,10 +44,10 @@ public class FreecamCommand extends AbstractPlayerCommand {
 
         if (enabling) {
             freecamPlayers.add(uuid);
-            Msg.success(context, "Freecam enabled. Type /freecam again to return.");
+            Msg.send(context, messages.get("commands.freecam.enabled"));
         } else {
             freecamPlayers.remove(uuid);
-            Msg.success(context, "Freecam disabled.");
+            Msg.send(context, messages.get("commands.freecam.disabled"));
         }
     }
 

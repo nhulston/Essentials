@@ -3,7 +3,6 @@ package com.nhulston.essentials.events;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentRegistryProxy;
-import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.SystemGroup;
 import com.hypixel.hytale.component.query.Query;
@@ -25,7 +24,6 @@ import javax.annotation.Nonnull;
 public class SpawnProtectionEvent {
     private static final String PROTECTED_MESSAGE = "This area is protected.";
     private static final String PROTECTED_COLOR = "#FF5555";
-    private static final String PVP_MESSAGE = "PvP is disabled in spawn.";
 
     private final SpawnProtectionManager spawnProtectionManager;
 
@@ -39,10 +37,35 @@ public class SpawnProtectionEvent {
         }
     }
 
-    private static void sendPvpMessage(PlayerRef playerRef) {
-        if (playerRef != null) {
-            playerRef.sendMessage(Message.raw(PVP_MESSAGE).color(PROTECTED_COLOR));
+    /**
+     * Common block event protection logic.
+     * @return true if event should be canceled, false otherwise
+     */
+    private static boolean shouldCancelBlockEvent(
+            @Nonnull SpawnProtectionManager manager,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull ArchetypeChunk<EntityStore> chunk,
+            int index,
+            @Nonnull com.hypixel.hytale.math.vector.Vector3i blockPos) {
+        
+        if (!manager.isEnabled()) {
+            return false;
         }
+
+        // Get current world name
+        String worldName = store.getExternalData().getWorld().getName();
+
+        if (!manager.isInProtectedArea(worldName, blockPos)) {
+            return false;
+        }
+
+        PlayerRef playerRef = chunk.getComponent(index, PlayerRef.getComponentType());
+        if (playerRef != null && manager.canBypass(playerRef.getUuid())) {
+            return false;
+        }
+
+        sendProtectedMessage(playerRef);
+        return true;
     }
 
     public void register(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
@@ -81,25 +104,14 @@ public class SpawnProtectionEvent {
         public void handle(int index, @NotNull ArchetypeChunk<EntityStore> chunk,
                            @NotNull Store<EntityStore> store,
                            @NotNull CommandBuffer<EntityStore> buffer,
-                           BreakBlockEvent event) {
-            if (!manager.isEnabled() || event.isCancelled()) {
+                           @NotNull BreakBlockEvent event) {
+            if (event.isCancelled()) {
                 return;
             }
 
-            // Check if block is in protected area
-            if (!manager.isInProtectedArea(event.getTargetBlock())) {
-                return;
+            if (shouldCancelBlockEvent(manager, store, chunk, index, event.getTargetBlock())) {
+                event.setCancelled(true);
             }
-
-            // Get player and check bypass permission
-            PlayerRef playerRef = chunk.getComponent(index, PlayerRef.getComponentType());
-            if (playerRef != null && manager.canBypass(playerRef.getUuid())) {
-                return;
-            }
-
-            // Cancel the event and notify player
-            event.setCancelled(true);
-            sendProtectedMessage(playerRef);
         }
     }
 
@@ -125,22 +137,14 @@ public class SpawnProtectionEvent {
         public void handle(int index, @NotNull ArchetypeChunk<EntityStore> chunk,
                            @NotNull Store<EntityStore> store,
                            @NotNull CommandBuffer<EntityStore> buffer,
-                           PlaceBlockEvent event) {
-            if (!manager.isEnabled() || event.isCancelled()) {
+                           @NotNull PlaceBlockEvent event) {
+            if (event.isCancelled()) {
                 return;
             }
 
-            if (!manager.isInProtectedArea(event.getTargetBlock())) {
-                return;
+            if (shouldCancelBlockEvent(manager, store, chunk, index, event.getTargetBlock())) {
+                event.setCancelled(true);
             }
-
-            PlayerRef playerRef = chunk.getComponent(index, PlayerRef.getComponentType());
-            if (playerRef != null && manager.canBypass(playerRef.getUuid())) {
-                return;
-            }
-
-            event.setCancelled(true);
-            sendProtectedMessage(playerRef);
         }
     }
 
@@ -166,27 +170,20 @@ public class SpawnProtectionEvent {
         public void handle(int index, @NotNull ArchetypeChunk<EntityStore> chunk,
                            @NotNull Store<EntityStore> store,
                            @NotNull CommandBuffer<EntityStore> buffer,
-                           DamageBlockEvent event) {
-            if (!manager.isEnabled() || event.isCancelled()) {
+                           @NotNull DamageBlockEvent event) {
+            if (event.isCancelled()) {
                 return;
             }
 
-            if (!manager.isInProtectedArea(event.getTargetBlock())) {
-                return;
+            if (shouldCancelBlockEvent(manager, store, chunk, index, event.getTargetBlock())) {
+                event.setCancelled(true);
             }
-
-            PlayerRef playerRef = chunk.getComponent(index, PlayerRef.getComponentType());
-            if (playerRef != null && manager.canBypass(playerRef.getUuid())) {
-                return;
-            }
-
-            event.setCancelled(true);
         }
     }
 
     /**
      * Filters damage in spawn area by running in the FilterDamageGroup.
-     * This should run before damage is actually applied.
+     * When invulnerable is enabled, cancels ALL damage to players in spawn.
      */
     private static class SpawnDamageFilterSystem extends DamageEventSystem {
         
@@ -212,7 +209,8 @@ public class SpawnProtectionEvent {
         public void handle(int index, @NotNull ArchetypeChunk<EntityStore> chunk,
                            @NotNull Store<EntityStore> store,
                            @NotNull CommandBuffer<EntityStore> buffer,
-                           Damage event) {
+                           @NotNull Damage event) {
+            // Only apply if spawn protection and invulnerability are both enabled
             if (!manager.isEnabled() || !manager.isInvulnerableEnabled() || event.isCancelled()) {
                 return;
             }
@@ -223,32 +221,17 @@ public class SpawnProtectionEvent {
                 return;
             }
 
+            // Get current world name
+            String worldName = store.getExternalData().getWorld().getName();
+
             // Check if victim is in protected area
-            if (!manager.isInProtectedArea(victimRef.getTransform().getPosition())) {
+            if (!manager.isInProtectedArea(worldName, victimRef.getTransform().getPosition())) {
                 return;
             }
 
-            // Check if the attacker is a player (only block PvP, not PvE)
-            Damage.Source source = event.getSource();
-            if (!(source instanceof Damage.EntitySource entitySource)) {
-                return;
-            }
-
-            // Get attacker's PlayerRef
-            Ref<EntityStore> attackerRef = entitySource.getRef();
-            if (!attackerRef.isValid()) {
-                return;
-            }
-            
-            PlayerRef attackerPlayerRef = store.getComponent(attackerRef, PlayerRef.getComponentType());
-            if (attackerPlayerRef == null) {
-                return; // Attacker is not a player (NPC, mob, etc.) - allow damage
-            }
-
-            // Both are players, victim is in spawn - cancel PvP damage
+            // Cancel ALL damage when player is in spawn with invulnerability enabled
             event.setCancelled(true);
             event.setAmount(0);
-            sendPvpMessage(attackerPlayerRef);
         }
     }
 }

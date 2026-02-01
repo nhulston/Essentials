@@ -75,7 +75,8 @@ public class SpawnRegionTitleEvent {
             }
 
             UUID uuid = playerRef.getUuid();
-            boolean isInSpawn = manager.isInProtectedArea(playerRef.getTransform().getPosition());
+            String worldName = store.getExternalData().getWorld().getName();
+            boolean isInSpawn = manager.isInProtectedArea(worldName, playerRef.getTransform().getPosition());
             Boolean wasInSpawn = playerInSpawn.get(uuid);
 
             // First time seeing this player, just record state
