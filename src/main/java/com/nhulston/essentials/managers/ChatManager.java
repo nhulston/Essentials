@@ -1,6 +1,5 @@
 package com.nhulston.essentials.managers;
 
-import at.helpch.placeholderapi.PlaceholderAPI;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent;
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
@@ -51,7 +50,7 @@ public class ChatManager {
                 .replace("%player%", sender.getUsername());
 
         if (PAPIIntegration.available()) {
-            formatted = PlaceholderAPI.setPlaceholders(sender, formatted);
+            formatted = PAPIIntegration.setPlaceholders(sender, formatted);
         }
 
         formatted = formatted.replace("%message%", sanitizedContent);
