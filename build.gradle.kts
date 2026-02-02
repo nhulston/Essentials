@@ -17,7 +17,7 @@ repositories {
 dependencies {
     // Hytale Server API (provided by server at runtime)
     compileOnly(files("libs/HytaleServer.jar"))
-    compileOnly("at.helpch:placeholderapi-hytale:1.0.2")
+    compileOnly("at.helpch:placeholderapi-hytale:1.0.4")
 
     // Common dependencies (will be bundled in JAR)
     implementation("com.google.code.gson:gson:2.10.1")
