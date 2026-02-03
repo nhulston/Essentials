@@ -7,7 +7,6 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.nhulston.essentials.Essentials;
 import com.nhulston.essentials.managers.HomeManager;
 import com.nhulston.essentials.managers.KitManager;
-import com.nhulston.essentials.managers.WarpManager;
 import com.nhulston.essentials.models.Home;
 import com.nhulston.essentials.models.Kit;
 import com.nhulston.essentials.models.Warp;
@@ -16,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
-import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
