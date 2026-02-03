@@ -81,7 +81,8 @@ If you have a permissions mod, follow the instructions for that mod.
 | <code>essentials.delhome</code>                | Delete homes                                                                                |
 | <code>essentials.homes.TIER</code>             | Home limit for tier (e.g., essentials.homes.vip). Configure tiers in config.toml            |
 | <code>essentials.setwarp</code>                | Create warps                                                                                |
-| <code>essentials.warp</code>                   | Teleport to warps                                                                           |
+| <code>essentials.warp</code>                   | Use the /warp command                                                                       |
+| <code>essentials.warps.warpname</code>         | Access to a specific warp (e.g., essentials.warps.shop). Warp names are lowercase!          |
 | <code>essentials.warp.others</code>            | Teleport other players to warps (console always has access)                                 |
 | <code>essentials.delwarp</code>                | Delete warps                                                                                |
 | <code>essentials.setspawn</code>               | Set server spawn                                                                            |
