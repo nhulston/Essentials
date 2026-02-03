@@ -62,6 +62,14 @@ public class KitPage extends InteractiveCustomUIPage<KitPage.KitPageData> {
             }
         }
         
+        // Filter out kits the player doesn't have permission for (if configured)
+        if (configManager.isKitsHideNoPermission()) {
+            allKits.removeIf(kit -> {
+                String permission = "essentials.kit." + kit.getId();
+                return !PermissionsModule.get().hasPermission(playerRef.getUuid(), permission);
+            });
+        }
+        
         if (allKits.isEmpty()) {
             // No kits available - could add a "No kits available" message element
             return;

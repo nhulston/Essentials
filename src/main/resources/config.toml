@@ -176,6 +176,12 @@ leave-message = "&8[&c-&8] &7%player%"
 # Placeholders: %player% = player name
 # Color codes: &0-&9, &a-&f (hex colors like &#FF5555 also supported)
 
+[kits]
+# Hide kits that the player doesn't have permission to use from the /kit GUI
+# When false, kits are shown but display "No access" status
+# When true, kits without permission are completely hidden
+hide-no-permission = false
+
 [starter-kit]
 # Give new players a kit when they first join
 enabled = true

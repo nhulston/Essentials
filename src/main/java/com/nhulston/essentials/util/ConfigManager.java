@@ -90,6 +90,9 @@ public class ConfigManager {
     // Rules settings
     private volatile String rulesMessage = "&6=== Server Rules ===\n&e1. &fBe respectful to all players\n&e2. &fNo griefing or stealing\n&e3. &fNo hacking or cheating\n&e4. &fHave fun!";
 
+    // Kit settings
+    private volatile boolean kitsHideNoPermission = false;
+
     // Starter kit settings
     private volatile boolean starterKitEnabled = false;
     private volatile String starterKitName = "";
@@ -216,6 +219,9 @@ public class ConfigManager {
             
             // Rules config
             rulesMessage = config.getString("rules.message", () -> "&6=== Server Rules ===\n&e1. &fBe respectful to all players\n&e2. &fNo griefing or stealing\n&e3. &fNo hacking or cheating\n&e4. &fHave fun!");
+
+            // Kits config
+            kitsHideNoPermission = config.getBoolean("kits.hide-no-permission", () -> false);
 
             // Starter kit config
             starterKitEnabled = config.getBoolean("starter-kit.enabled", () -> false);
@@ -427,5 +433,9 @@ public class ConfigManager {
 
     public boolean isUpdateNotifyEnabled() {
         return updateNotifyEnabled;
+    }
+
+    public boolean isKitsHideNoPermission() {
+        return kitsHideNoPermission;
     }
 }
