@@ -43,6 +43,7 @@ import com.nhulston.essentials.events.TeleportMovementEvent;
 import com.nhulston.essentials.events.SleepPercentageEvent;
 import com.nhulston.essentials.events.StarterKitEvent;
 import com.nhulston.essentials.events.UpdateNotifyEvent;
+import com.nhulston.essentials.integration.PAPIIntegration;
 import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.ChatManager;
 import com.nhulston.essentials.managers.HomeManager;
@@ -109,6 +110,8 @@ public class Essentials extends JavaPlugin {
     protected void start() {
         registerCommands();
         registerEvents();
+
+        PAPIIntegration.register(homeManager, kitManager, storageManager);
         
         // Check for updates asynchronously
         versionChecker.checkForUpdatesAsync();

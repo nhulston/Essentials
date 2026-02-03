@@ -18,6 +18,7 @@ Essentials is an all-in-one utility plugin for Hytale server administrators.
 *   Private messaging
 *   Custom join/leave messages (removes ugly default join/leave messages)
 *   Starter kits for new players 
+*   [PlaceholderAPI](https://www.curseforge.com/hytale/mods/placeholder-api) Support
 *   Other useful commands: /list, /heal, /freecam, /god, /tphere, /top
 
 ![Homes](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/homes.png) ![TPA](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/tpa.png) ![Warps](https://raw.githubusercontent.com/nhulston/Essentials/refs/heads/main/images/warps.png)
@@ -130,6 +131,40 @@ Kits are configured in `kits.toml`. Create kits in-game with `/kit create <name>
 *   `type` - `"add"` to add items to inventory, `"replace"` to clear inventory first
 
 Each kit requires `essentials.kit.kitNameHere` permission to claim. Items that don't fit in the intended slot (e.g., armor when already wearing armor) will go to the player's inventory, and only drop on the ground if the inventory is full.
+
+# PlaceholderAPI Integration
+
+Essentials has optional PlaceholderAPI integration in its chat formatting, in addition to providing the following placeholders:
+
+| Placeholder                           | Description (for the requested player unless specified) |
+|---------------------------------------|---------------------------------------------------------|
+| %essentials_max_homes%                | Max homes                                               |
+| %essentials_homes_num%                | Number of homes                                         |
+| %essentials_homes_names%              | Names of homes (split by ", ")                          |
+| %essentials_all_kits_num%             | Number of all kits on server                            |
+| %essentials_all_kits_names%           | Names of all kits on server (split by ", ")             |
+| %essentials_allowed_kits_num%         | Number of kits this player can access                   |
+| %essentials_allowed_kits_names%       | Names of kits this player can access (split by ", ")    |
+| %essentials_all_warps_num%            | Number of all warps on server                           |
+| %essentials_all_warps_names%          | Names of all warps on server (split by ", ")            |
+| %essentials_\<warp/home>_\<name>_world% | World name of a particular warp/home                    |
+| %essentials_\<warp/home>_\<name>_coords% | Coords of a particular warp/home (x y z)                |
+| %essentials_\<warp/home>_\<name>_x%   | X coord of a warp/home                                  |
+| %essentials_\<warp/home>_\<name>_y%   | Y coord of a warp/home                                  |
+| %essentials_\<warp/home>_\<name>_z%   | Z coord of a warp/home                                  |
+| %essentials_\<warp/home>_\<name>_yaw% | Yaw of a warp/home                                      |
+| %essentials_\<warp/home>_\<name>_pitch% | Pitch of a warp/home                                    |
+| %essentials_warp_\<name>_allowed%     | Can this player access this warp                        |
+| %essentials_home_\<name>_createdat%   | Timestamp of when a home was created                    |
+| %essentials_kit_\<name>_name%         | Display name of a kit                                   |
+| %essentials_kit_\<name>_id%           | Id of a kit                                             |
+| %essentials_kit_\<name>_type%         | Type of a kit                                           |
+| %essentials_kit_\<name>_cooldown%     | Cooldown of a kit                                       |
+| %essentials_kit_\<name>_isreplacemode% | Whether kit has replacemode set to true/false           |
+| %essentials_kit_\<name>_itemsnum%     | Number of items in a kit                                |
+| %essentials_kit_\<name>_allowed%      | Can this player access the kit                          |
+
+
 
 # Community & Support
 

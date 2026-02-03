@@ -10,6 +10,9 @@
   ],
   "Website": "https://github.com/nhulston/essentials",
   "Main": "com.nhulston.essentials.Essentials",
+  "OptionalDependencies": {
+    "HelpChat:PlaceholderAPI": "*"
+  },
   "ServerVersion": "*",
   "IncludesAssetPack": true
 }
