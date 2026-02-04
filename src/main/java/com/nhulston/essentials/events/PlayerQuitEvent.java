@@ -4,6 +4,7 @@ import com.hypixel.hytale.event.EventRegistry;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.nhulston.essentials.commands.freecam.FreecamCommand;
 import com.nhulston.essentials.commands.msg.MsgCommand;
+import com.nhulston.essentials.commands.socialspy.SocialSpyCommand;
 import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.TeleportManager;
 import com.nhulston.essentials.managers.TpaManager;
@@ -47,6 +48,7 @@ public class PlayerQuitEvent {
             // Clean up static command/event data
             MsgCommand.onPlayerQuit(playerUuid);
             FreecamCommand.onPlayerQuit(playerUuid);
+            SocialSpyCommand.onPlayerQuit(playerUuid);
             SpawnRegionTitleEvent.onPlayerQuit(playerUuid);
         });
         

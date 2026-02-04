@@ -49,8 +49,9 @@ success = "&aSpawn set!"
 position-error = "&cCould not get your position. Try again."
 
 [commands.warp]
-no-warps = "&cNo warps have been set."
+no-warps = "&cNo warps are available to you."
 not-found = "&cWarp '{warp}' not found."
+no-permission = "&cYou don't have permission to use this warp."
 list-prefix = "&6Warps"
 teleported = "&aTeleported to warp '{warp}'"
 teleported-other = "&aTeleported {player} to warp '{warp}'."
@@ -132,6 +133,11 @@ format-to = "&7[To {player}] &f{message}"
 usage = "&cUsage: /r <message>"
 no-one = "&cYou have no one to reply to."
 player-offline = "&cThat player is no longer online."
+
+[commands.socialspy]
+enabled = "&aSocialSpy enabled. You will now see all private messages."
+disabled = "&cSocialSpy disabled."
+format = "&7[SocialSpy] {sender} -> {target}: {message}"
 
 [commands.shout]
 usage = "&cUsage: /shout <message>"

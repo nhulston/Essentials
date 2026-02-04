@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -22,7 +23,9 @@ import com.nhulston.essentials.util.TeleportUtil;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Warp command.
@@ -48,15 +51,35 @@ public class WarpCommand extends AbstractPlayerCommand {
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
-        // /warp (no args) - list all warps
-        Map<String, Warp> warps = warpManager.getWarps();
+        // /warp (no args) - list warps player has permission to access
+        Map<String, Warp> allWarps = warpManager.getWarps();
 
-        if (warps.isEmpty()) {
+        if (allWarps.isEmpty()) {
             Msg.send(context, messages.get("commands.warp.no-warps"));
             return;
         }
 
-        Msg.send(context, messages.get("commands.warp.list-prefix") + ": " + String.join(", ", warps.keySet()));
+        // Filter warps by permission
+        UUID playerUuid = playerRef.getUuid();
+        String accessibleWarps = allWarps.keySet().stream()
+            .filter(warpName -> hasWarpPermission(playerUuid, warpName))
+            .collect(Collectors.joining(", "));
+
+        if (accessibleWarps.isEmpty()) {
+            Msg.send(context, messages.get("commands.warp.no-warps"));
+            return;
+        }
+
+        Msg.send(context, messages.get("commands.warp.list-prefix") + ": " + accessibleWarps);
+    }
+
+    /**
+     * Check if a player has permission to access a specific warp.
+     * Permission format: essentials.warps.<warpname>
+     */
+    private static boolean hasWarpPermission(@Nonnull UUID playerUuid, @Nonnull String warpName) {
+        String permission = "essentials.warps." + warpName.toLowerCase();
+        return PermissionsModule.get().hasPermission(playerUuid, permission);
     }
 
     /**
@@ -87,6 +110,12 @@ public class WarpCommand extends AbstractPlayerCommand {
 
             if (warp == null) {
                 Msg.send(context, messages.get("commands.warp.not-found", Map.of("warp", warpName)));
+                return;
+            }
+
+            // Check per-warp permission
+            if (!hasWarpPermission(playerRef.getUuid(), warpName)) {
+                Msg.send(context, messages.get("commands.warp.no-permission"));
                 return;
             }
 

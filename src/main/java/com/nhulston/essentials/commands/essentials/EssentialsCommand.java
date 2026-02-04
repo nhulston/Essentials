@@ -30,11 +30,6 @@ public class EssentialsCommand extends AbstractCommand {
     }
 
     @Override
-    protected boolean canGeneratePermission() {
-        return false;
-    }
-
-    @Override
     protected CompletableFuture<Void> execute(@Nonnull CommandContext context) {
         Message prefix = Message.raw("Running ").color(GRAY);
         Message versionText = Message.raw("EssentialsCore v" + Essentials.VERSION)

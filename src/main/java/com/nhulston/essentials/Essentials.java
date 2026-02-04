@@ -20,6 +20,7 @@ import com.nhulston.essentials.commands.repair.RepairCommand;
 import com.nhulston.essentials.commands.rtp.RtpCommand;
 import com.nhulston.essentials.commands.rules.RulesCommand;
 import com.nhulston.essentials.commands.shout.ShoutCommand;
+import com.nhulston.essentials.commands.socialspy.SocialSpyCommand;
 import com.nhulston.essentials.commands.top.TopCommand;
 import com.nhulston.essentials.commands.tphere.TphereCommand;
 import com.nhulston.essentials.commands.trash.TrashCommand;
@@ -61,7 +62,7 @@ import com.nhulston.essentials.util.VersionChecker;
 import javax.annotation.Nonnull;
 
 public class Essentials extends JavaPlugin {
-    public static final String VERSION = "1.7.1";
+    public static final String VERSION = "1.8.0";
     
     private static Essentials instance;
     
@@ -194,6 +195,9 @@ public class Essentials extends JavaPlugin {
 
         // Shout/broadcast command
         getCommandRegistry().registerCommand(new ShoutCommand(configManager));
+
+        // Socialspy command
+        getCommandRegistry().registerCommand(new SocialSpyCommand());
 
         // Repair command
         getCommandRegistry().registerCommand(new RepairCommand(configManager, storageManager));
