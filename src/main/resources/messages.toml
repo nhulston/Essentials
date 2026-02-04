@@ -192,6 +192,13 @@ cooldown = "&cThis kit is on cooldown. {time} remaining."
 inventory-error = "&cCould not access your inventory."
 received = "&aYou received the {kit} kit!"
 
+[gui.warp]
+not-found = "&cWarp not found."
+no-permission = "&cYou don't have permission to use this warp."
+
+[gui.home]
+not-found = "&cHome not found."
+
 [update]
 available = "&8[&6Essentials&8] &eA new version is available!"
 version-info = "&7Current: &f{current} &8| &7Latest: &a{latest}"

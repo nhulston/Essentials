@@ -7,11 +7,13 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.gui.HomePage;
 import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.HomeManager;
 import com.nhulston.essentials.managers.TeleportManager;
@@ -56,10 +58,19 @@ public class HomeCommand extends AbstractPlayerCommand {
         }
 
         if (homes.size() == 1) {
+            // Only one home - teleport directly
             String homeName = homes.keySet().iterator().next();
             doTeleportToHome(context, store, ref, playerRef, currentWorld, homeName, homeManager, teleportManager, backManager, messages);
         } else {
-            Msg.send(context, messages.get("commands.home.list-prefix") + ": " + String.join(", ", homes.keySet()));
+            // Multiple homes - open the home selection GUI
+            Player player = store.getComponent(ref, Player.getComponentType());
+            if (player == null) {
+                Msg.send(context, messages.get("errors.generic"));
+                return;
+            }
+            
+            HomePage homePage = new HomePage(playerRef, homeManager, teleportManager, backManager);
+            player.getPageManager().openCustomPage(ref, store, homePage);
         }
     }
 

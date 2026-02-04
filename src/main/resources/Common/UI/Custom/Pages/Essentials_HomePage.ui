@@ -1,0 +1,37 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {
+  $C.@Container {
+    Anchor: (Width: 650, Height: 500);
+
+    #Title {
+      Group {
+        $C.@Title {
+          @Text = "Select Your Home";
+        }
+      }
+    }
+
+    #Content {
+      LayoutMode: Top;
+
+      Group #Main {
+        LayoutMode: Top;
+        FlexWeight: 1;
+
+        Group #HomeGrid {
+          FlexWeight: 1;
+          LayoutMode: TopScrolling;
+          Padding: (Full: 8);
+          ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+          Group #HomeRows {
+            LayoutMode: Top;
+          }
+        }
+      }
+    }
+  }
+}
+
+$C.@BackButton {}
