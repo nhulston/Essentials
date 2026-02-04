@@ -17,8 +17,6 @@ import com.nhulston.essentials.util.ConfigManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-
 public class AfkSystem {
 
     private static ComponentType<EntityStore, AfkComponent> AFK_COMPONENT;
@@ -30,12 +28,12 @@ public class AfkSystem {
         this.configManager = configManager;
     }
 
-    public static void registerComponents(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
+    public static void registerComponents(@NotNull ComponentRegistryProxy<EntityStore> registry) {
         AFK_COMPONENT = registry.registerComponent(AfkComponent.class, AfkComponent::new);
     }
 
-    public void registerSystems(@Nonnull ComponentRegistryProxy<EntityStore> registry) {
-        registry.registerSystem(new PlayerDamageSystem());
+    public void registerSystems(@NotNull ComponentRegistryProxy<EntityStore> registry) {
+        registry.registerSystem(new PlayerDamageSystem(configManager));
         registry.registerSystem(new PlayerTickerSystem(configManager));
     }
 
@@ -48,7 +46,7 @@ public class AfkSystem {
             store.addComponent(ref, AFK_COMPONENT, new AfkComponent());
         });
 
-        eventRegistry.<String, PlayerChatEvent>registerAsyncGlobal(PlayerChatEvent.class, future ->
+        eventRegistry.registerAsyncGlobal(PlayerChatEvent.class, future ->
                 future.thenApply(event -> {
                     PlayerRef playerRef = event.getSender();
                     if (!playerRef.isValid() || playerRef.getReference() == null) return event;
@@ -68,10 +66,15 @@ public class AfkSystem {
     }
 
     private static class PlayerDamageSystem extends DamageEventSystem {
+        private final ConfigManager configManager;
+
+        public PlayerDamageSystem(final @NotNull ConfigManager configManager) {
+            this.configManager = configManager;
+        }
+
         @Override
         public void handle(int index, @NotNull ArchetypeChunk<EntityStore> archetypeChunk, @NotNull Store<EntityStore> store, @NotNull CommandBuffer<EntityStore> commandBuffer, @NotNull Damage damage) {
-            Player player = archetypeChunk.getComponent(index, Player.getComponentType());
-            if (player == null) return;
+            if (configManager.getAfkKickTime() <= 0) return;
 
             AfkComponent afk = archetypeChunk.getComponent(index, AFK_COMPONENT);
             if (afk == null) return;
@@ -81,7 +84,7 @@ public class AfkSystem {
 
         @Override
         public @Nullable Query<EntityStore> getQuery() {
-            return Query.and(AFK_COMPONENT);
+            return Query.and(Player.getComponentType(), AFK_COMPONENT);
         }
     }
 
@@ -91,7 +94,7 @@ public class AfkSystem {
 
         private final ConfigManager configManager;
 
-        public PlayerTickerSystem(final @Nonnull ConfigManager configManager) {
+        public PlayerTickerSystem(final @NotNull ConfigManager configManager) {
             super(1.0f);
             this.configManager = configManager;
         }
@@ -125,18 +128,8 @@ public class AfkSystem {
 
             if (afk.getSecondsSinceLastMoved() < configManager.getAfkKickTime()) return;
 
-            World world = player.getWorld();
-
-            // Try to kick player from world's thread, otherwise do it directly
-            if (world != null) {
-                world.execute(() -> kickPlayer(playerRef, commandBuffer));
-            } else {
-                kickPlayer(playerRef, commandBuffer);
-            }
-        }
-
-        private void kickPlayer(PlayerRef playerRef, CommandBuffer<EntityStore> commandBuffer) {
-            commandBuffer.run(_ -> playerRef.getPacketHandler().disconnect(configManager.getAfkKickMessage()));
+            // This is a network operation, so it is thread safe
+            playerRef.getPacketHandler().disconnect(configManager.getAfkKickMessage());
         }
 
         @Override
