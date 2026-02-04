@@ -8,11 +8,13 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.nhulston.essentials.Essentials;
+import com.nhulston.essentials.gui.WarpPage;
 import com.nhulston.essentials.managers.BackManager;
 import com.nhulston.essentials.managers.TeleportManager;
 import com.nhulston.essentials.managers.WarpManager;
@@ -25,22 +27,25 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * Warp command.
- * Usage: /warp - List all warps (player only)
+ * Usage: /warp - Opens warp selection GUI (player only)
  * Usage: /warp <name> - Teleport to a warp (with delay)
  * Usage: /warp <name> <player> - Teleport another player to a warp instantly (requires essentials.warp.others or console)
  */
 public class WarpCommand extends AbstractPlayerCommand {
     private final WarpManager warpManager;
+    private final TeleportManager teleportManager;
+    private final BackManager backManager;
     private final MessageManager messages;
 
     public WarpCommand(@Nonnull WarpManager warpManager, @Nonnull TeleportManager teleportManager,
                       @Nonnull BackManager backManager) {
         super("warp", "Teleport to a warp");
         this.warpManager = warpManager;
+        this.teleportManager = teleportManager;
+        this.backManager = backManager;
         this.messages = Essentials.getInstance().getMessageManager();
 
         requirePermission("essentials.warp");
@@ -51,26 +56,34 @@ public class WarpCommand extends AbstractPlayerCommand {
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
-        // /warp (no args) - list warps player has permission to access
+        // /warp (no args) - open warp selection GUI
         Map<String, Warp> allWarps = warpManager.getWarps();
-
+        
         if (allWarps.isEmpty()) {
             Msg.send(context, messages.get("commands.warp.no-warps"));
             return;
         }
-
-        // Filter warps by permission
+        
+        // Check if player has access to any warps
         UUID playerUuid = playerRef.getUuid();
-        String accessibleWarps = allWarps.keySet().stream()
-            .filter(warpName -> hasWarpPermission(playerUuid, warpName))
-            .collect(Collectors.joining(", "));
-
-        if (accessibleWarps.isEmpty()) {
+        boolean hasAnyWarp = allWarps.keySet().stream()
+            .anyMatch(warpName -> hasWarpPermission(playerUuid, warpName));
+        
+        if (!hasAnyWarp) {
             Msg.send(context, messages.get("commands.warp.no-warps"));
             return;
         }
-
-        Msg.send(context, messages.get("commands.warp.list-prefix") + ": " + accessibleWarps);
+        
+        // Get Player component to open GUI
+        Player player = store.getComponent(ref, Player.getComponentType());
+        if (player == null) {
+            Msg.send(context, messages.get("errors.generic"));
+            return;
+        }
+        
+        // Open the warp selection page
+        WarpPage warpPage = new WarpPage(playerRef, warpManager, teleportManager, backManager);
+        player.getPageManager().openCustomPage(ref, store, warpPage);
     }
 
     /**
