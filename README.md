@@ -100,7 +100,7 @@ If you have a permissions mod, follow the instructions for that mod.
 | <code>essentials.kit.cooldown.bypass</code>    | Bypass kit cooldowns                                                                        |
 | <code>essentials.teleport.bypass</code>        | Bypass teleport delay                                                                       |
 | <code>essentials.back</code>                   | Teleport to last death location                                                             |
-| <code>essentials.afk.cooldown.bypass</code>    | Bypass AFK cooldown                                                                         |
+| <code>essentials.afk.bypass</code>             | Bypass AFK cooldown                                                                         |
 | <code>essentials.rtp</code>                    | Random teleport                                                                             |
 | <code>essentials.rtp.cooldown.bypass</code>    | Bypass RTP cooldown                                                                         |
 | <code>essentials.list</code>                   | List online players                                                                         |
