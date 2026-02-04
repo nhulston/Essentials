@@ -98,6 +98,8 @@ public class AfkSystem {
 
         @Override
         public void tick(float dt, int index, @NotNull ArchetypeChunk<EntityStore> archetypeChunk, @NotNull Store<EntityStore> store, @NotNull CommandBuffer<EntityStore> commandBuffer) {
+            if (configManager.getAfkKickTime() <= 0) return;
+
             PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
             if (playerRef == null) return;
 
