@@ -128,8 +128,9 @@ public class AfkSystem {
 
             if (afk.getSecondsSinceLastMoved() < configManager.getAfkKickTime()) return;
 
-            // This is a network operation, so it is thread safe
-            playerRef.getPacketHandler().disconnect(configManager.getAfkKickMessage());
+            // Use commandBuffer to defer disconnect until after tick completes
+            // (cannot modify store while it's processing)
+            commandBuffer.run(_ -> playerRef.getPacketHandler().disconnect(configManager.getAfkKickMessage()));
         }
 
         @Override
